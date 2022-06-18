@@ -1,4 +1,7 @@
-### FPED Data Import
+###---------------------------------------------------
+###   FPED/MPED DATA IMPORT AND WRANGLING
+###---------------------------------------------------
+
 # user guide: https://www.ars.usda.gov/ARSUserFiles/80400530/pdf/fped/FPED_0506.pdf
 
 library( haven ) 
