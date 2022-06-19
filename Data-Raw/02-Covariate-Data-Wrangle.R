@@ -127,14 +127,14 @@ age.dx.var <- c( paste0( 'MCQ240', LETTERS ), paste0( 'MCQ240', c( 'AA', 'BB', '
 
 mcqall.b$AgeDxA <- NA
 for ( i in 1:length( csites ) ){
-  mcqall.b[which( mcqall.b$CATYPEA == csites[i] ), 'AgeDxA'] <- mcqall.b[which( mcqall.b$CATYPEA == csites[i] ), age.dx.var[i]]
+  mcqall.b[ which( mcqall.b$CATYPEA == csites[i] ), 'AgeDxA' ] <- mcqall.b[ which( mcqall.b$CATYPEA == csites[i] ), age.dx.var[i] ]
 }
 
 mcqall.b$AgeDxB <- NA
 mcqall.b$AgeDxC <- NA
 for ( i in 1:30 ){
-  mcqall.b[which( mcqall.b$CATYPEB == csites[i] ), 'AgeDxB'] <- mcqall.b[which( mcqall.b$CATYPEB == csites[i] ), age.dx.var[i]]
-  mcqall.b[which( mcqall.b$CATYPEC == csites[i] ), 'AgeDxC'] <- mcqall.b[which( mcqall.b$CATYPEC == csites[i] ), age.dx.var[i]]
+  mcqall.b[ which( mcqall.b$CATYPEB == csites[i] ), 'AgeDxB' ] <- mcqall.b[ which( mcqall.b$CATYPEB == csites[i] ), age.dx.var[i] ]
+  mcqall.b[ which( mcqall.b$CATYPEC == csites[i] ), 'AgeDxC' ] <- mcqall.b[ which( mcqall.b$CATYPEC == csites[i] ), age.dx.var[i] ]
 }
 
 
@@ -155,7 +155,7 @@ mcqall.bcd <- mcqall.bc%>%
   mutate( RIDAGEMN = ifelse( is.na( RIDAGEMN ) == T, RIDAGEYR*12, RIDAGEMN ),
    TimeSinceCADX = ifelse( is.na( AgeDxA ) == T & is.na( AgeDxB ) == T & is.na( AgeDxC ) == T, NA, 
                               ifelse( CA == 1, RIDAGEYR-min( c( AgeDxA, AgeDxB, AgeDxC ),  na.rm = TRUE ), NA ) ) ,
-   PrimaryCA = as.factor( ( ifelse( min( c( AgeDxA, AgeDxB, AgeDxC ),  na.rm = TRUE ) == AgeDxA & CATYPEA != 'Non-Melanoma Skin', paste( CATYPEA ), 
+   PrimaryCA = as.factor( as.character( ( ifelse( min( c( AgeDxA, AgeDxB, AgeDxC ),  na.rm = TRUE ) == AgeDxA & CATYPEA != 'Non-Melanoma Skin', paste( CATYPEA ), 
                                      ifelse( min( c( AgeDxA, AgeDxB, AgeDxC ),  na.rm = TRUE ) == AgeDxB & CATYPEB != 'Non-Melanoma Skin', paste( CATYPEB ), 
                                             ifelse( min( c( AgeDxA, AgeDxB, AgeDxC ),  na.rm = TRUE ) == AgeDxC & CATYPEC != 'Non-Melanoma Skin', paste( CATYPEC ), 
                                                     ifelse( min( c( AgeDxA, AgeDxB, AgeDxC ),  na.rm = TRUE ) == AgeDxA & CATYPEA == 'Non-Melanoma Skin' & min( c( AgeDxB, AgeDxC ),  na.rm = TRUE ) == AgeDxB, paste( CATYPEB ),
@@ -164,7 +164,7 @@ mcqall.bcd <- mcqall.bc%>%
                                                                             ifelse( min( c( AgeDxA, AgeDxB, AgeDxC ),  na.rm = TRUE ) == AgeDxB & CATYPEB == 'Non-Melanoma Skin' & min( c( AgeDxA, AgeDxC ),  na.rm = TRUE ) == AgeDxC, paste( CATYPEC ),
                                                                                     ifelse( min( c( AgeDxA, AgeDxB, AgeDxC ),  na.rm = TRUE ) == AgeDxC & CATYPEC == 'Non-Melanoma Skin' & min( c( AgeDxA, AgeDxB ),  na.rm = TRUE ) == AgeDxA, paste( CATYPEA ),
                                                                                             ifelse( min( c( AgeDxA, AgeDxB, AgeDxC ),  na.rm = TRUE ) == AgeDxC & CATYPEC == 'Non-Melanoma Skin' & min( c( AgeDxA, AgeDxB ),  na.rm = TRUE ) == AgeDxB, paste( CATYPEB ),
-                                                                                    NA ) ) ) ) ) ) ) ) ) ) ),
+                                                                                    NA ) ) ) ) ) ) ) ) ) ) ) ),
    TimeCAFactor = as.factor( ifelse( TimeSinceCADX < 2,  '2< years', 
                                        ifelse( TimeSinceCADX >= 2 & TimeSinceCADX < 6, '>= 2 and <6 years', 
                                               ifelse( TimeSinceCADX >= 6,  '>= 6 years', NA ) ) ) ) ,
@@ -184,9 +184,15 @@ mcqall.bcd <- mcqall.bc%>%
          TimeSinceCADXmn, TimeCAFactormn, AgeDxAmn, AgeDxBmn, AgeDxCmn )
 
 # fix some rows without values
-mcqall.bcd$PrimaryCA <- factor( ifelse( is.na( mcqall.bcd$PrimaryCA ) == TRUE & mcqall.bcd$CA == 1 & is.na( mcqall.bcd$CATYPEA ) == FALSE, paste( mcqall.bcd$CATYPEA ), 
+mcqall.bcd$PrimaryCA <- factor( as.character( ifelse( is.na( mcqall.bcd$PrimaryCA ) == TRUE & mcqall.bcd$CA == 1 & is.na( mcqall.bcd$CATYPEA ) == FALSE, paste( mcqall.bcd$CATYPEA ), 
                                   ifelse( is.na( mcqall.bcd$PrimaryCA ) == TRUE & mcqall.bcd$CA == 1 & is.na( mcqall.bcd$CATYPEA ) == TRUE, 'Unknown', 
-                                         ifelse( is.na( mcqall.bcd$PrimaryCA ) == FALSE, paste( mcqall.bcd$PrimaryCA ), NA ) ) ) )
+                                         ifelse( is.na( mcqall.bcd$PrimaryCA ) == FALSE, paste( mcqall.bcd$PrimaryCA ), NA ) ) ) ) )
+
+mcqall.bcd<-mcqall.bcd %>%
+  mutate( PrimaryCA = factor( as.character( ifelse(
+    PrimaryCA =='Non-Melanoma Skin' & (is.na(CATYPEB ) == F | is.na(CATYPEC ) == F), paste(CATYPEB),
+    paste(PrimaryCA ) ) ) ) )
+
 
 # for those whose 1st cancer was non-melanoma skin cancer but had a significant second or third cancer,
 # we take the second or third cancer (whichever cane first in their history) as the primary cancer
@@ -197,7 +203,7 @@ mcqall.bcd.2<-mcqall.bcd%>%
 
 # make group site variable
 
-View(mcqall.bcd.2[which(mcqall.bcd.2$PrimaryCA=='Non-Melanoma Skin' & is.na(mcqall.bcd.2$CATYPEB)==F),])
+View(mcqall.bcd.[which(mcqall.bcd.2$PrimaryCA=='Non-Melanoma Skin' & is.na(mcqall.bcd.2$CATYPEB)==F),])
 View(mcqall.bcd.2[which(mcqall.bcd.2$PrimaryCA=='Non-Melanoma Skin' & is.na(mcqall.bcd.2$CATYPEB)==F),])
 
 View(mcqall.bcd.2[which(mcqall$CATYPEA =='Non-Melanoma Skin' | mcqall$CATYPEB =='Non-Melanoma Skin' | mcqall$CATYPEC =='Non-Melanoma Skin' ),])
@@ -211,7 +217,7 @@ mcqall.bcd <- mcqall.bcd%>%
                                                       ifelse( PrimaryCA %in% c( 'Testicular, Prostate' ), 'MaleReproductive', 
                                                               ifelse( PrimaryCA %in% c( 'Breast' ), 'Breast', 
                                                            ifelse( !( PrimaryCA %in% c( 'Testicular', 'Ovarian', 'Cervical', 'Uterus', 'Kidney', 'Bladder', 
-                                                                                     'Prostate', 'Breast' ) ) & is.na( PrimaryCA ) == FALSE, 'Other', NA ) ) ) ) ) ) )
+                                                                                     'Prostate', 'Breast' ) ) & is.na( PrimaryCA ) == FALSE, 'Other', NA ) ) ) ) ) ) ))
 
 
 ### END CANCER DATA IMPORT
