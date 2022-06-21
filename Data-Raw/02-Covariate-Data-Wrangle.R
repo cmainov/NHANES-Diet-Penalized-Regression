@@ -227,14 +227,21 @@ mcqall.bcd <- mcqall.bc%>%
 
 
 # ref: https://mdpi-res.com/d_attachment/cancers/cancers-13-03368/article_deploy/cancers-13-03368-v2.pdf?version=1625568797
+
+`%notin%` <- Negate(`%in%`)
+
 mcqall.bcd <- mcqall.bcd%>%
   mutate( PrimaryCAGroup = factor( ifelse( PrimaryCA %in% c( 'Colon', 'Pancreatic', 'Rectal', 'Stomach', 'Gallbladder', 'Liver' ,'Esophageal'), 'Gastrointestinal', 
                                       ifelse( PrimaryCA %in% c( 'Kidney', 'Bladder' ), 'Genitourinary', 
                                               ifelse( PrimaryCA %in% c( 'Ovarian', 'Cervical', 'Uterus' ), 'Gynecological', 
                                                       ifelse( PrimaryCA %in% c( 'Testicular, Prostate' ), 'MaleReproductive', 
                                                               ifelse( PrimaryCA %in% c( 'Breast' ), 'Breast', 
-                                                           ifelse( !( PrimaryCA %in% c( 'Testicular', 'Ovarian', 'Cervical', 'Uterus', 'Kidney', 'Bladder', 
-                                                                                     'Prostate', 'Breast' ) ) & is.na( PrimaryCA ) == FALSE, 'Other', NA ) ) ) ) ) ) ))
+                                                                      ifelse( PrimaryCA %in% c( 'Melanoma' ), 'Melanoma',
+                                                                              ifelse( PrimaryCA %in% c( 'Non-Melanoma Skin' ), 'Non-Melanoma Skin',
+                                                                                     ifelse( PrimaryCA %in% c( 'Skin-Other' ), 'Skin-Unknown', 
+                                                           ifelse( (PrimaryCA %notin% c( 'Colon', 'Pancreatic', 'Rectal', 'Stomach', 'Gallbladder', 'Liver' ,'Esophageal',
+                                                                                         'Kidney', 'Bladder', 'Ovarian', 'Cervical', 'Uterus', 'Testicular', 'Prostate',
+                                                                                         'Breast', 'Melanoma', 'Non-Melanoma Skin', 'Skin-Other' ) ) & is.na( PrimaryCA ) == FALSE, 'Other', NA ) ) ) ) ) ) ) ) ) ) ) 
 
 
 ### END CANCER DATA IMPORT
