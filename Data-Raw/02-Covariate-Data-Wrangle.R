@@ -228,13 +228,13 @@ mcqall.bcd <- mcqall.bc%>%
 
 # ref: https://mdpi-res.com/d_attachment/cancers/cancers-13-03368/article_deploy/cancers-13-03368-v2.pdf?version=1625568797
 
-`%notin%` <- Negate(`%in%`)
+`%notin%` <- Negate(`%in%`) # use this function in subsequent code chunk
 
 mcqall.bcd <- mcqall.bcd%>%
   mutate( PrimaryCAGroup = factor( ifelse( PrimaryCA %in% c( 'Colon', 'Pancreatic', 'Rectal', 'Stomach', 'Gallbladder', 'Liver' ,'Esophageal'), 'Gastrointestinal', 
                                       ifelse( PrimaryCA %in% c( 'Kidney', 'Bladder' ), 'Genitourinary', 
                                               ifelse( PrimaryCA %in% c( 'Ovarian', 'Cervical', 'Uterus' ), 'Gynecological', 
-                                                      ifelse( PrimaryCA %in% c( 'Testicular, Prostate' ), 'MaleReproductive', 
+                                                      ifelse( PrimaryCA %in% c( 'Testicular', 'Prostate' ), 'MaleReproductive', 
                                                               ifelse( PrimaryCA %in% c( 'Breast' ), 'Breast', 
                                                                       ifelse( PrimaryCA %in% c( 'Melanoma' ), 'Melanoma',
                                                                               ifelse( PrimaryCA %in% c( 'Non-Melanoma Skin' ), 'Non-Melanoma Skin',
@@ -306,9 +306,9 @@ alqall <- ( rbind( alqdat99[, c( 'SEQN', 'RIAGENDR', 'ALQ130' )],
                alqdat17[, c( 'SEQN', 'RIAGENDR', 'ALQ130' )] ) )
 
 alqall$ALCUSE <- factor( ifelse( alqall$RIAGENDR == 1 & alqall$ALQ130>2 & alqall$ALQ130< 999 & is.na( alqall$ALQ130 ) == F, 1, 
-                               ifelse( alqall$RIAGENDR == 1 & alqall$ALQ130< = 2 & is.na( alqall$ALQ130 ) == F, 0, 
+                               ifelse( alqall$RIAGENDR == 1 & alqall$ALQ130 <= 2 & is.na( alqall$ALQ130 ) == F, 0, 
                                       ifelse( alqall$RIAGENDR == 2 & alqall$ALQ130>1 & alqall$ALQ130< 999 & is.na( alqall$ALQ130 ) == F, 1, 
-                                             ifelse( alqall$RIAGENDR == 2 & alqall$ALQ130< = 1 & is.na( alqall$ALQ130 ) == F, 0, 
+                                             ifelse( alqall$RIAGENDR == 2 & alqall$ALQ130 <= 1 & is.na( alqall$ALQ130 ) == F, 0, 
                                       ifelse( alqall$ALQ130 == 999 & is.na( alqall$ALQ130 ) == F, NA, NA ) ) ) ) ), levels = c( 0, 1 ), labels = c( 'None/moderate', 'Heavy' ) )
 
 
@@ -397,12 +397,12 @@ table( fsdall$FoodAsstPnowic )
 
 table( fsd9901$FSQ170 )
 
-#binary FS variables
+# binary FS variables
 fsdall$BinFoodSecHH <- factor( fsdall$FSDHH, levels = c( 1, 2, 3, 4 ), labels = c( 'High', 'High', 'Low', 'Low' ) )
 fsdall$BinFoodSecAD <- factor( fsdall$FSDAD, levels = c( 1, 2, 3, 4 ), labels = c( 'High', 'High', 'Low', 'Low' ) )
 
 
-#Demo
+# DEMOGRAPHIC DATA
 
 demodat99 <- nhanes_load_data( 'DEMO', '1999-2000' )
 demodat01 <- nhanes_load_data( 'DEMO', '2001-2002' )
@@ -456,13 +456,13 @@ demoall <- demoall%>%
                                                                      'Some college/associates', 
                                                                      'College Grad/above' ), 
                                                                      exclude = c( 7, 9 ) ) )%>%
-  mutate( Education_bin = factor( ifelse( Education %in% c( '<9th Gr', '9th-11 Gr', 'HSchool Diploma/GED' ), '< = HS', 
+  mutate( Education_bin = factor( ifelse( Education %in% c( '<9th Gr', '9th-11 Gr', 'HSchool Diploma/GED' ), ' <= HS', 
                                   ifelse( Education %in% c( 'Some college/associates', 'College Grad/above' ), '>= College', NA ) ) ) )
   
 
 
 
-#BMI
+# BMI DATA
 bmidat99 <- nhanes_load_data( 'BMX', '1999-2000', demographics = FALSE )
 bmidat01 <- nhanes_load_data( 'BMX', '2001-2002', demographics = FALSE )
 bmidat03 <- nhanes_load_data( 'BMX', '2003-2004', demographics = FALSE )
@@ -1224,13 +1224,9 @@ kiqdat <- rbind( kiqdat99[, c( 'SEQN', 'KIQ022' )],
 # Cancer data
 cadata <- mcqall.bcd[, c( 'SEQN', 'CATYPEA', 'CATYPEB', 'CATYPEC' )] ###fix here
 
-# merge data together
-cci1 <- left_join( diqdat, kiqdat, by = 'SEQN' )
-cci2 <- left_join( cci1, mcqall, by = 'SEQN' )
-
-#Flag Variables
-
-cci3 <- cci2%>%
+# merge data together and create flag variables
+cci_dat <- left_join( diqdat, kiqdat, by = 'SEQN' ) %>%
+  left_join( ., mcqall, by = 'SEQN' ) %>%
   mutate( diab_flag = ifelse( DIQ010 == 1, 1, 
                           ifelse( DIQ010 == 2, 0, 
                                  ifelse( DIQ010 == 3, 0, NA ) ) ) )%>%
@@ -1246,7 +1242,7 @@ cci3 <- cci2%>%
   mutate( liver_flag = ifelse( MCQ160L == 1, 2, 
                            ifelse( MCQ160L == 2, 0, NA ) ) )%>%
   mutate( RA_flag = ifelse( MCQ160A == 1 & MCQ190 == 1, 1, 
-                        ifelse( MCQ160A == 1 & MCQ190 ! = 1, 0, 
+                        ifelse( MCQ160A == 1 & MCQ190 != 1, 0, 
                                ifelse( MCQ160A == 2, 0, NA ) ) ) )%>%
   mutate( CA_flag = ifelse( MCQ220 == 2, 0, 
                         ifelse( MCQ220 == 1 & is.na( CATYPEA ) == F & is.na( CATYPEB ) == T & is.na( CATYPEC ) == T, 2, 
@@ -1348,67 +1344,44 @@ mergall.pa <- rbind( merg9905, merg0717 )
 
 
 #####MERGE
+# merge all individual datasets together and then, finally, merge with FPED data from previous R script
+setwd( '/Volumes/My Passport for Mac/Arthur Lab/FPED Raw Data/Analysis files/GitHub Repository Files /NHANES-Diet-Penalized-Regression/Data-Wrangled' )
 
-names( demoall )
-mcqdemo <- left_join( demoall, mcqall.bcd[, -which( colnames( mcqall.bcd ) == 'RIDAGEYR' )], by = 'SEQN' )
-step2 <- left_join( mcqdemo, smdall[, c( 'SEQN', 'SmokStat' )], by = 'SEQN' )
-step3 <- left_join( step2, alqall[, c( 'SEQN', 'ALCUSE' )], by = 'SEQN' )
-step4 <- left_join( step3, fsdall[, c( 'SEQN', 'FoodSecCatHH', 'FoodSecCatAD', 'FoodAsstP', 
-                                 'FoodAsstPnowic', 'BinFoodSecHH', 'BinFoodSecAD' )], by = 'SEQN' )
-step5 <- left_join( step4, bmiall, by = "SEQN" )
-step6 <- left_join( step5, nutrall, by = "SEQN" )
-step7 <- left_join( step6, cci3, by = "SEQN" )
-step8 <- left_join( step7, mergall.pa, by = "SEQN" )
-
-
-# merge with FPED data
-setwd( '/Volumes/My Passport for Mac/Arthur Lab/FPED Raw Data/Analysis files/GitHub Repository Files /NHANES_FI_CA_Diet/Data' )
-dietfactors <- readRDS( '24hr_demo_FPED_twoday.rds' )
-
-# final merge--keeping only those that had diet data from total of 101316 originally ( new n = 85391 )
-finalstep <- left_join( step8, dietfactors, by = 'SEQN' )
-
-# Create 18yr and 16yr weights using 2 days of dietary data ( WTDR2D weights )
-#https://wwwn.cdc.gov/Nchs/Nhanes/2003-2004/DR2TOT_C.htm#WTDR2D
-
-finalstep <- 
-finalstep %>% 
+d <- left_join( demoall, mcqall.bcd[, -which( colnames( mcqall.bcd ) == 'RIDAGEYR' )], by = 'SEQN' )%>%
+  left_join( ., smdall[, c( 'SEQN', 'SmokStat' )], by = 'SEQN' ) %>%
+  left_join( ., alqall[, c( 'SEQN', 'ALCUSE' )], by = 'SEQN' ) %>%
+  left_join( ., fsdall[, c( 'SEQN', 'FoodSecCatHH', 'FoodSecCatAD', 'FoodAsstP', 
+                                 'FoodAsstPnowic', 'BinFoodSecHH', 'BinFoodSecAD' )], by = 'SEQN' ) %>%
+  left_join( ., bmiall, by = "SEQN" ) %>%
+  left_join( ., nutrall, by = "SEQN" ) %>%
+  left_join( ., cci_dat, by = "SEQN" ) %>%
+  left_join( ., mergall.pa, by = "SEQN" ) %>%
+  left_join( ., readRDS( '01-FPED-Wrangled.rds' ), by = 'SEQN' ) %>%
+  # Create 18yr and 16yr weights using 2 days of dietary data ( WTDR2D weights )
   mutate( WTDR18YR = ifelse( Cycle %in% c( 1, 2 ), ( 2/10 )*WTDR4YR,  # 1999-2017
-                         ifelse( Cycle %in% c( 3:10 ), ( 8/10 )*WTDR2D, NA ) ) )%>%
-  mutate( WTDR16YR = ifelse( Cycle %in% c( 1, 2 ), ( 2/9 )*WTDR4YR,  # 1999-2015
-                         ifelse( Cycle %in% c( 3:9 ), ( 7/9 )*WTDR2D, NA ) ) )%>%
-  mutate( WTDR14YR = ifelse( Cycle %in% c( 1, 2 ), ( 2/8 )*WTDR4YR, # 1999-2013
-                         ifelse( Cycle %in% c( 3:8 ), ( 6/8 )*WTDR2D, NA ) ) )
-
-
-nrow( finalstep )
-
-
-# setting `PMUFA:SFA` in those with zero intake in fat to 0 since dividing
-# by zero caused them to show up as NA incorrectly
-# make alcohol intake categorical variable using dietary intake data
-sapply( finalstep, function( x ) sum( is.na( x ) ) )
-
-finalstep2 <- finalstep%>%
-  mutate( `PMUFA:SFA` = ifelse( is.na( finalstep$`PMUFA:SFA` ) == TRUE & finalstep$PFAT == 0
-                            & finalstep$MFAT == 0 &finalstep$SFAT == 0, 0, `PMUFA:SFA` ) )%>%
-  mutate( alc_cat = factor( ifelse( ALCO<0.1, 'non-drinking', 
-                               ifelse( ALCO<28 & ALCO >= 0.1 & Gender == 'Male', 'moderate', 
-                                      ifelse( ALCO<14 & ALCO >= 0.1 & Gender == 'Female', 'moderate', 
-                                             ifelse( ALCO>= 28  & Gender == 'Male', 'heavy', 
-                                                    ifelse( ALCO>= 14  & Gender == 'Female', 'heavy', NA ) ) ) ) ) ) )
-
-
-
-# sort rows by age
-finalstep3 <- finalstep2%>%
-  arrange( Age )
-
-# Create an indicator variable for cancer and food insecure subjects
-finalstep3$CAFS <- ifelse( finalstep3$CA == 1 & finalstep3$BinFoodSecHH == 'Low' & finalstep3$Age>= 20, 1, 
-                     ifelse( is.na( finalstep3$CA ) == TRUE | is.na( finalstep3$BinFoodSecHH ) == TRUE, NA, 
-                            0 ) )
+                             ifelse( Cycle %in% c( 3:10 ), ( 8/10 )*WTDR2D, NA ) ),
+          WTDR16YR = ifelse( Cycle %in% c( 1, 2 ), ( 2/9 )*WTDR4YR,  # 1999-2015
+                             ifelse( Cycle %in% c( 3:9 ), ( 7/9 )*WTDR2D, NA ) ),
+          WTDR14YR = ifelse( Cycle %in% c( 1, 2 ), ( 2/8 )*WTDR4YR, # 1999-2013
+                             ifelse( Cycle %in% c( 3:8 ), ( 6/8 )*WTDR2D, NA ) ),
+          # setting `PMUFA:SFA` in those with zero intake in fat to 0 since dividing
+          # by zero caused them to show up as NA incorrectly
+          `PMUFA:SFA` = ifelse( is.na( `PMUFA:SFA` ) == TRUE & PFAT == 0
+                                        & MFAT == 0 &SFAT == 0, 0, `PMUFA:SFA` ),
+          # make alcohol intake categorical variable using dietary intake data
+          alc_cat = factor( ifelse( ALCO<0.1, 'non-drinking', 
+                                            ifelse( ALCO<28 & ALCO >= 0.1 & Gender == 'Male', 'moderate', 
+                                                    ifelse( ALCO<14 & ALCO >= 0.1 & Gender == 'Female', 'moderate', 
+                                                            ifelse( ALCO>= 28  & Gender == 'Male', 'heavy', 
+                                                                    ifelse( ALCO>= 14  & Gender == 'Female', 'heavy', NA ) ) ) ) ) ),
+          # Create an indicator variable for cancer and food insecure subjects
+          CAFS = ifelse( CA == 1 & BinFoodSecHH == 'Low' & Age>= 20, 1, 
+                  ifelse( is.na( CA ) == TRUE | is.na( BinFoodSecHH ) == TRUE, NA, 
+                          0 ) ) ) %>%
+  # sort rows by age
+   arrange(Age)
+          
 
 # Save
-setwd( '/Volumes/My Passport for Mac/Arthur Lab/FPED Raw Data/Analysis files/GitHub Repository Files /NHANES_FI_CA_Diet/Data' )
-saveRDS( finalstep3, 'Covariate_Merge.rds' )
+setwd( '/Volumes/My Passport for Mac/Arthur Lab/FPED Raw Data/Analysis files/GitHub Repository Files /NHANES-Diet-Penalized-Regression/Data-Wrangled' )
+saveRDS( d, '02-Covariates-Wrangled' )
