@@ -151,63 +151,80 @@ mcqall.bc <- mcqall.b %>%
 
 # CREATE VARIABLES
 mcqall.bcd <- mcqall.bc%>%
+  mutate(   AgeDxAmn = AgeDxA*12 ,
+            AgeDxBmn = AgeDxB*12 ,
+            AgeDxCmn = AgeDxC*12 )%>%
   rowwise(  )%>%
   mutate( RIDAGEMN = ifelse( is.na( RIDAGEMN ) == T, RIDAGEYR*12, RIDAGEMN ),
-   TimeSinceCADX = ifelse( is.na( AgeDxA ) == T & is.na( AgeDxB ) == T & is.na( AgeDxC ) == T, NA, 
-                              ifelse( CA == 1, RIDAGEYR-min( c( AgeDxA, AgeDxB, AgeDxC ),  na.rm = TRUE ), NA ) ) ,
-   PrimaryCA = as.factor( as.character( ( ifelse( min( c( AgeDxA, AgeDxB, AgeDxC ),  na.rm = TRUE ) == AgeDxA & CATYPEA != 'Non-Melanoma Skin', paste( CATYPEA ), 
-                                     ifelse( min( c( AgeDxA, AgeDxB, AgeDxC ),  na.rm = TRUE ) == AgeDxB & CATYPEB != 'Non-Melanoma Skin', paste( CATYPEB ), 
-                                            ifelse( min( c( AgeDxA, AgeDxB, AgeDxC ),  na.rm = TRUE ) == AgeDxC & CATYPEC != 'Non-Melanoma Skin', paste( CATYPEC ), 
-                                                    ifelse( min( c( AgeDxA, AgeDxB, AgeDxC ),  na.rm = TRUE ) == AgeDxA & CATYPEA == 'Non-Melanoma Skin' & min( c( AgeDxB, AgeDxC ),  na.rm = TRUE ) == AgeDxB, paste( CATYPEB ),
-                                                            ifelse( min( c( AgeDxA, AgeDxB, AgeDxC ),  na.rm = TRUE ) == AgeDxA & CATYPEA == 'Non-Melanoma Skin' & min( c( AgeDxB, AgeDxC ),  na.rm = TRUE ) == AgeDxC, paste( CATYPEC ),
-                                                                    ifelse( min( c( AgeDxA, AgeDxB, AgeDxC ),  na.rm = TRUE ) == AgeDxB & CATYPEB == 'Non-Melanoma Skin' & min( c( AgeDxA, AgeDxC ),  na.rm = TRUE ) == AgeDxA, paste( CATYPEA ),
-                                                                            ifelse( min( c( AgeDxA, AgeDxB, AgeDxC ),  na.rm = TRUE ) == AgeDxB & CATYPEB == 'Non-Melanoma Skin' & min( c( AgeDxA, AgeDxC ),  na.rm = TRUE ) == AgeDxC, paste( CATYPEC ),
-                                                                                    ifelse( min( c( AgeDxA, AgeDxB, AgeDxC ),  na.rm = TRUE ) == AgeDxC & CATYPEC == 'Non-Melanoma Skin' & min( c( AgeDxA, AgeDxB ),  na.rm = TRUE ) == AgeDxA, paste( CATYPEA ),
-                                                                                            ifelse( min( c( AgeDxA, AgeDxB, AgeDxC ),  na.rm = TRUE ) == AgeDxC & CATYPEC == 'Non-Melanoma Skin' & min( c( AgeDxA, AgeDxB ),  na.rm = TRUE ) == AgeDxB, paste( CATYPEB ),
-                                                                                    NA ) ) ) ) ) ) ) ) ) ) ) ),
-   TimeCAFactor = as.factor( ifelse( TimeSinceCADX < 2,  '2< years', 
-                                       ifelse( TimeSinceCADX >= 2 & TimeSinceCADX < 6, '>= 2 and <6 years', 
-                                              ifelse( TimeSinceCADX >= 6,  '>= 6 years', NA ) ) ) ) ,
-   AgeDxAmn = AgeDxA*12 ,
-   AgeDxBmn = AgeDxB*12 ,
-   AgeDxCmn = AgeDxC*12 ,
-   TimeSinceCADXmn = ifelse( is.na( AgeDxAmn ) == T & is.na( AgeDxBmn ) == T & is.na( AgeDxCmn ) == T, NA, 
-                                ifelse( CA == 1, RIDAGEMN-min( c( AgeDxAmn, AgeDxBmn, AgeDxCmn ),  na.rm = TRUE ), NA ) ) ,
-   TimeCAFactormn = as.factor( ifelse( TimeSinceCADXmn < 24,  '2< years', 
-                                         ifelse( TimeSinceCADXmn >= 24 & TimeSinceCADXmn<72, '>= 2 and <6 years', 
-                                                ifelse( TimeSinceCADXmn >= 72,  '>= 6 years', NA ) ) ) ) ,
-   TimeSinceCADXmn = ifelse( TimeSinceCADXmn < 0, NA, TimeSinceCADXmn ) ,
-   TimeCAFactormn = ifelse( TimeSinceCADXmn < 0, NA, as.character( TimeCAFactormn ) ) ,
-   TimeSinceCADX = ifelse( TimeSinceCADX < 0, NA, TimeSinceCADX ) ,
-   TimeCAFactor = factor( ifelse( TimeSinceCADX < 0, NA, as.character( TimeCAFactor ) ) ) ) %>%
-  select( SEQN, TimeSinceCADX, PrimaryCA, CA, TimeCAFactor, RIDAGEYR, RIDAGEMN, AgeDxA, AgeDxB, AgeDxC, CATYPEA, CATYPEB, CATYPEC, 
-         TimeSinceCADXmn, TimeCAFactormn, AgeDxAmn, AgeDxBmn, AgeDxCmn )
+          
+          TimeSinceCADX = ifelse( is.na( AgeDxA ) == T & is.na( AgeDxB ) == T & is.na( AgeDxC ) == T, NA, 
+                                  ifelse( CA == 1, RIDAGEYR-min( c( AgeDxA, AgeDxB, AgeDxC ),  na.rm = TRUE ), NA ) ),
+          
+          TimeSinceCADXmn = ifelse( is.na( AgeDxAmn ) == T & is.na( AgeDxBmn ) == T & is.na( AgeDxCmn ) == T, NA, 
+                                    ifelse( CA == 1, RIDAGEMN-min( c( AgeDxAmn, AgeDxBmn, AgeDxCmn ),  na.rm = TRUE ), NA ) )) %>%
+  ungroup() %>%
+  mutate( PrimaryCA = factor( as.character( ifelse( is.na ( CATYPEA )==F & is.na ( CATYPEB )==T & is.na ( CATYPEC )==T, paste0(  CATYPEA ),
+                                                    ifelse( (is.na ( CATYPEA )==F & is.na ( CATYPEB )==F & is.na ( CATYPEC )==T ) & ( TimeSinceCADX==RIDAGEYR-AgeDxB ) & CATYPEB != 'Non-Melanoma Skin', paste0( CATYPEB ),
+                                                            ifelse( (is.na ( CATYPEA )==F & is.na ( CATYPEB )==F & is.na ( CATYPEC )==T ) & ( TimeSinceCADX==RIDAGEYR-AgeDxA ) & CATYPEA != 'Non-Melanoma Skin', paste0( CATYPEA ),
+                                                                    ifelse( (is.na ( CATYPEA )==F & is.na ( CATYPEB )==F & is.na ( CATYPEC )==T ) & ( TimeSinceCADX==RIDAGEYR-AgeDxB ) & CATYPEB == 'Non-Melanoma Skin', paste0( CATYPEA ),
+                                                                            ifelse( (is.na ( CATYPEA )==F & is.na ( CATYPEB )==F & is.na ( CATYPEC )==T ) & ( TimeSinceCADX==RIDAGEYR-AgeDxA ) & CATYPEA == 'Non-Melanoma Skin', paste0( CATYPEB ),
+                                                                                    ifelse( (is.na ( CATYPEA )==F & is.na ( CATYPEB )==F & is.na ( CATYPEC )==F ) & ( TimeSinceCADX==RIDAGEYR-AgeDxA ) & CATYPEA == 'Non-Melanoma Skin' & ( AgeDxB <= AgeDxC ), paste0( CATYPEB ),
+                                                                                            ifelse( (is.na ( CATYPEA )==F & is.na ( CATYPEB )==F & is.na ( CATYPEC )==F ) & ( TimeSinceCADX==RIDAGEYR-AgeDxB ) & CATYPEB == 'Non-Melanoma Skin' & ( AgeDxA <= AgeDxC ), paste0( CATYPEA ),
+                                                                                                    ifelse( (is.na ( CATYPEA )==F & is.na ( CATYPEB )==F & is.na ( CATYPEC )==F ) & ( TimeSinceCADX==RIDAGEYR-AgeDxC ) & CATYPEC == 'Non-Melanoma Skin' & ( AgeDxA <= AgeDxB ), paste0( CATYPEA ),
+                                                                                                            ifelse( (is.na ( CATYPEA )==F & is.na ( CATYPEB )==F & is.na ( CATYPEC )==F ) & ( TimeSinceCADX==RIDAGEYR-AgeDxC ) & CATYPEC == 'Non-Melanoma Skin' & ( AgeDxA >= AgeDxB ), paste0( CATYPEB ),
+                                                                                                                    ifelse( (is.na ( CATYPEA )==F & is.na ( CATYPEB )==F & is.na ( CATYPEC )==F ) & ( TimeSinceCADX==RIDAGEYR-AgeDxB ) & CATYPEB == 'Non-Melanoma Skin' & ( AgeDxA <= AgeDxC ), paste0( CATYPEA ),
+                                                                                                                            ifelse( (is.na ( CATYPEA )==F & is.na ( CATYPEB )==F & is.na ( CATYPEC )==F ) & ( TimeSinceCADX==RIDAGEYR-AgeDxB ) & CATYPEB == 'Non-Melanoma Skin' & ( AgeDxA >= AgeDxC ), paste0( CATYPEC ),
+                                                                                                                                    ifelse( (is.na ( CATYPEA )==F & is.na ( CATYPEB )==F & is.na ( CATYPEC )==F ) & ( TimeSinceCADX==RIDAGEYR-AgeDxA ) & CATYPEA == 'Non-Melanoma Skin' & ( AgeDxB <= AgeDxC ), paste0( CATYPEB ),
+                                                                                                                                            ifelse( (is.na ( CATYPEA )==F & is.na ( CATYPEB )==F & is.na ( CATYPEC )==F ) & ( TimeSinceCADX==RIDAGEYR-AgeDxA ) & CATYPEA == 'Non-Melanoma Skin' & ( AgeDxB >= AgeDxC ), paste0( CATYPEC ),
+                                                                                                                                                    ifelse( (is.na ( CATYPEA )==F & is.na ( CATYPEB )==F & is.na ( CATYPEC )==F ) & ( TimeSinceCADX==RIDAGEYR-AgeDxA ) & CATYPEA != 'Non-Melanoma Skin', paste0( CATYPEA ),                                                                                                         
+                                                                                                                                                            ifelse( (is.na ( CATYPEA )==F & is.na ( CATYPEB )==F & is.na ( CATYPEC )==F ) & ( TimeSinceCADX==RIDAGEYR-AgeDxB ) & CATYPEB != 'Non-Melanoma Skin', paste0( CATYPEB ),
+                                                                                                                                                                    ifelse( (is.na ( CATYPEA )==F & is.na ( CATYPEB )==F & is.na ( CATYPEC )==F ) & ( TimeSinceCADX==RIDAGEYR-AgeDxC ) & CATYPEC != 'Non-Melanoma Skin', paste0( CATYPEC ),
+                                                                                                                                                                            NA ) ) ) ) ) ) ) ) ) ) ) ) ) ) ) ) ) ),
+          TimeSinceCADX = ifelse( is.na ( CATYPEA )==F & is.na ( CATYPEB )==T & is.na ( CATYPEC )==T, RIDAGEYR - AgeDxA,
+                                  ifelse( (is.na ( CATYPEA )==F & is.na ( CATYPEB )==F & is.na ( CATYPEC )==T ) & ( TimeSinceCADX==RIDAGEYR-AgeDxB ) & CATYPEB != 'Non-Melanoma Skin', RIDAGEYR - AgeDxB,
+                                          ifelse( (is.na ( CATYPEA )==F & is.na ( CATYPEB )==F & is.na ( CATYPEC )==T ) & ( TimeSinceCADX==RIDAGEYR-AgeDxA ) & CATYPEA != 'Non-Melanoma Skin', RIDAGEYR - AgeDxA,
+                                                  ifelse( (is.na ( CATYPEA )==F & is.na ( CATYPEB )==F & is.na ( CATYPEC )==T ) & ( TimeSinceCADX==RIDAGEYR-AgeDxB ) & CATYPEB == 'Non-Melanoma Skin', RIDAGEYR - AgeDxA,
+                                                          ifelse( (is.na ( CATYPEA )==F & is.na ( CATYPEB )==F & is.na ( CATYPEC )==T ) & ( TimeSinceCADX==RIDAGEYR-AgeDxA ) & CATYPEA == 'Non-Melanoma Skin', RIDAGEYR - AgeDxB,
+                                                                  ifelse( (is.na ( CATYPEA )==F & is.na ( CATYPEB )==F & is.na ( CATYPEC )==F ) & ( TimeSinceCADX==RIDAGEYR-AgeDxA ) & CATYPEA == 'Non-Melanoma Skin' & ( AgeDxB <= AgeDxC ), RIDAGEYR - AgeDxB,
+                                                                          ifelse( (is.na ( CATYPEA )==F & is.na ( CATYPEB )==F & is.na ( CATYPEC )==F ) & ( TimeSinceCADX==RIDAGEYR-AgeDxB ) & CATYPEB == 'Non-Melanoma Skin' & ( AgeDxA <= AgeDxC ), RIDAGEYR - AgeDxA,
+                                                                                  ifelse( (is.na ( CATYPEA )==F & is.na ( CATYPEB )==F & is.na ( CATYPEC )==F ) & ( TimeSinceCADX==RIDAGEYR-AgeDxC ) & CATYPEC == 'Non-Melanoma Skin' & ( AgeDxA <= AgeDxB ), RIDAGEYR - AgeDxA,
+                                                                                          ifelse( (is.na ( CATYPEA )==F & is.na ( CATYPEB )==F & is.na ( CATYPEC )==F ) & ( TimeSinceCADX==RIDAGEYR-AgeDxC ) & CATYPEC == 'Non-Melanoma Skin' & ( AgeDxA >= AgeDxB ), RIDAGEYR - AgeDxB,
+                                                                                                  ifelse( (is.na ( CATYPEA )==F & is.na ( CATYPEB )==F & is.na ( CATYPEC )==F ) & ( TimeSinceCADX==RIDAGEYR-AgeDxB ) & CATYPEB == 'Non-Melanoma Skin' & ( AgeDxA <= AgeDxC ), RIDAGEYR - AgeDxA,
+                                                                                                          ifelse( (is.na ( CATYPEA )==F & is.na ( CATYPEB )==F & is.na ( CATYPEC )==F ) & ( TimeSinceCADX==RIDAGEYR-AgeDxB ) & CATYPEB == 'Non-Melanoma Skin' & ( AgeDxA >= AgeDxC ), RIDAGEYR - AgeDxC,
+                                                                                                                  ifelse( (is.na ( CATYPEA )==F & is.na ( CATYPEB )==F & is.na ( CATYPEC )==F ) & ( TimeSinceCADX==RIDAGEYR-AgeDxA ) & CATYPEA == 'Non-Melanoma Skin' & ( AgeDxB <= AgeDxC ), RIDAGEYR - AgeDxB,
+                                                                                                                          ifelse( (is.na ( CATYPEA )==F & is.na ( CATYPEB )==F & is.na ( CATYPEC )==F ) & ( TimeSinceCADX==RIDAGEYR-AgeDxA ) & CATYPEA == 'Non-Melanoma Skin' & ( AgeDxB >= AgeDxC ), RIDAGEYR - AgeDxC,
+                                                                                                                                  ifelse( (is.na ( CATYPEA )==F & is.na ( CATYPEB )==F & is.na ( CATYPEC )==F ) & ( TimeSinceCADX==RIDAGEYR-AgeDxA ) & CATYPEA != 'Non-Melanoma Skin', RIDAGEYR - AgeDxA,                                                                                                         
+                                                                                                                                          ifelse( (is.na ( CATYPEA )==F & is.na ( CATYPEB )==F & is.na ( CATYPEC )==F ) & ( TimeSinceCADX==RIDAGEYR-AgeDxB ) & CATYPEB != 'Non-Melanoma Skin', RIDAGEYR - AgeDxB,
+                                                                                                                                                  ifelse( (is.na ( CATYPEA )==F & is.na ( CATYPEB )==F & is.na ( CATYPEC )==F ) & ( TimeSinceCADX==RIDAGEYR-AgeDxC ) & CATYPEC != 'Non-Melanoma Skin', RIDAGEYR - AgeDxC,
+                                                                                                                                                          TimeSinceCADX ) ) ) ) ) ) ) ) ) ) ) ) ) ) ) ),
+          TimeSinceCADXmn = ifelse( is.na ( CATYPEA )==F & is.na ( CATYPEB )==T & is.na ( CATYPEC )==T, RIDAGEMN - AgeDxAmn,
+                                    ifelse( (is.na ( CATYPEA )==F & is.na ( CATYPEB )==F & is.na ( CATYPEC )==T ) & ( TimeSinceCADXmn==RIDAGEMN-AgeDxBmn ) & CATYPEB != 'Non-Melanoma Skin', RIDAGEMN - AgeDxBmn,
+                                            ifelse( (is.na ( CATYPEA )==F & is.na ( CATYPEB )==F & is.na ( CATYPEC )==T ) & ( TimeSinceCADXmn==RIDAGEMN-AgeDxAmn ) & CATYPEA != 'Non-Melanoma Skin', RIDAGEMN - AgeDxAmn,
+                                                    ifelse( (is.na ( CATYPEA )==F & is.na ( CATYPEB )==F & is.na ( CATYPEC )==T ) & ( TimeSinceCADXmn==RIDAGEMN-AgeDxBmn ) & CATYPEB == 'Non-Melanoma Skin', RIDAGEMN - AgeDxAmn,
+                                                            ifelse( (is.na ( CATYPEA )==F & is.na ( CATYPEB )==F & is.na ( CATYPEC )==T ) & ( TimeSinceCADXmn==RIDAGEMN-AgeDxAmn ) & CATYPEA == 'Non-Melanoma Skin', RIDAGEMN - AgeDxBmn,
+                                                                    ifelse( (is.na ( CATYPEA )==F & is.na ( CATYPEB )==F & is.na ( CATYPEC )==F ) & ( TimeSinceCADXmn==RIDAGEMN-AgeDxAmn ) & CATYPEA == 'Non-Melanoma Skin' & ( AgeDxBmn <= AgeDxCmn ), RIDAGEMN - AgeDxBmn,
+                                                                            ifelse( (is.na ( CATYPEA )==F & is.na ( CATYPEB )==F & is.na ( CATYPEC )==F ) & ( TimeSinceCADXmn==RIDAGEMN-AgeDxBmn ) & CATYPEB == 'Non-Melanoma Skin' & ( AgeDxAmn <= AgeDxCmn ), RIDAGEMN - AgeDxAmn,
+                                                                                    ifelse( (is.na ( CATYPEA )==F & is.na ( CATYPEB )==F & is.na ( CATYPEC )==F ) & ( TimeSinceCADXmn==RIDAGEMN-AgeDxCmn ) & CATYPEC == 'Non-Melanoma Skin' & ( AgeDxAmn <= AgeDxBmn ), RIDAGEMN - AgeDxAmn,
+                                                                                            ifelse( (is.na ( CATYPEA )==F & is.na ( CATYPEB )==F & is.na ( CATYPEC )==F ) & ( TimeSinceCADXmn==RIDAGEMN-AgeDxCmn ) & CATYPEC == 'Non-Melanoma Skin' & ( AgeDxAmn >= AgeDxBmn ), RIDAGEMN - AgeDxBmn,
+                                                                                                    ifelse( (is.na ( CATYPEA )==F & is.na ( CATYPEB )==F & is.na ( CATYPEC )==F ) & ( TimeSinceCADXmn==RIDAGEMN-AgeDxBmn ) & CATYPEB == 'Non-Melanoma Skin' & ( AgeDxAmn <= AgeDxCmn ), RIDAGEMN - AgeDxAmn,
+                                                                                                            ifelse( (is.na ( CATYPEA )==F & is.na ( CATYPEB )==F & is.na ( CATYPEC )==F ) & ( TimeSinceCADXmn==RIDAGEMN-AgeDxBmn ) & CATYPEB == 'Non-Melanoma Skin' & ( AgeDxAmn >= AgeDxCmn ), RIDAGEMN - AgeDxCmn,
+                                                                                                                    ifelse( (is.na ( CATYPEA )==F & is.na ( CATYPEB )==F & is.na ( CATYPEC )==F ) & ( TimeSinceCADXmn==RIDAGEMN-AgeDxAmn ) & CATYPEA == 'Non-Melanoma Skin' & ( AgeDxBmn <= AgeDxCmn ), RIDAGEMN - AgeDxBmn,
+                                                                                                                            ifelse( (is.na ( CATYPEA )==F & is.na ( CATYPEB )==F & is.na ( CATYPEC )==F ) & ( TimeSinceCADXmn==RIDAGEMN-AgeDxAmn ) & CATYPEA == 'Non-Melanoma Skin' & ( AgeDxBmn >= AgeDxCmn ), RIDAGEMN - AgeDxCmn,
+                                                                                                                                    ifelse( (is.na ( CATYPEA )==F & is.na ( CATYPEB )==F & is.na ( CATYPEC )==F ) & ( TimeSinceCADXmn==RIDAGEMN-AgeDxAmn ) & CATYPEA != 'Non-Melanoma Skin', RIDAGEMN - AgeDxAmn,                                                                                                         
+                                                                                                                                            ifelse( (is.na ( CATYPEA )==F & is.na ( CATYPEB )==F & is.na ( CATYPEC )==F ) & ( TimeSinceCADXmn==RIDAGEMN-AgeDxBmn ) & CATYPEB != 'Non-Melanoma Skin', RIDAGEMN - AgeDxBmn,
+                                                                                                                                                    ifelse( (is.na ( CATYPEA )==F & is.na ( CATYPEB )==F & is.na ( CATYPEC )==F ) & ( TimeSinceCADXmn==RIDAGEMN-AgeDxCmn ) & CATYPEC != 'Non-Melanoma Skin', RIDAGEMN - AgeDxCmn,
+                                                                                                                                                            TimeSinceCADXmn ) ) ) ) ) ) ) ) ) ) ) ) ) ) ) ),
+          TimeCAFactor = as.factor( ifelse( TimeSinceCADX < 2,  '2< years', 
+                                            ifelse( TimeSinceCADX >= 2 & TimeSinceCADX < 6, '>= 2 and <6 years', 
+                                                    ifelse( TimeSinceCADX >= 6,  '>= 6 years', NA ) ) ) ) ,
+          TimeCAFactormn = as.factor( ifelse( TimeSinceCADXmn < 24,  '2< years', 
+                                              ifelse( TimeSinceCADXmn >= 24 & TimeSinceCADXmn<72, '>= 2 and <6 years', 
+                                                      ifelse( TimeSinceCADXmn >= 72,  '>= 6 years', NA ) ) ) ),
+          TimeSinceCADXmn = ifelse( TimeSinceCADXmn < 0, NA, TimeSinceCADXmn ) ,
+          TimeCAFactormn = ifelse( TimeSinceCADXmn < 0, NA, as.character( TimeCAFactormn ) ) ,
+          TimeSinceCADX = ifelse( TimeSinceCADX < 0, NA, TimeSinceCADX ) ,
+          TimeCAFactor = factor( ifelse( TimeSinceCADX < 0, NA, as.character( TimeCAFactor ) ) ) )
 
-# fix some rows without values
-mcqall.bcd$PrimaryCA <- factor( as.character( ifelse( is.na( mcqall.bcd$PrimaryCA ) == TRUE & mcqall.bcd$CA == 1 & is.na( mcqall.bcd$CATYPEA ) == FALSE, paste( mcqall.bcd$CATYPEA ), 
-                                  ifelse( is.na( mcqall.bcd$PrimaryCA ) == TRUE & mcqall.bcd$CA == 1 & is.na( mcqall.bcd$CATYPEA ) == TRUE, 'Unknown', 
-                                         ifelse( is.na( mcqall.bcd$PrimaryCA ) == FALSE, paste( mcqall.bcd$PrimaryCA ), NA ) ) ) ) )
-
-mcqall.bcd<-mcqall.bcd %>%
-  mutate( PrimaryCA = factor( as.character( ifelse(
-    PrimaryCA =='Non-Melanoma Skin' & (is.na(CATYPEB ) == F | is.na(CATYPEC ) == F), paste(CATYPEB),
-    paste(PrimaryCA ) ) ) ) )
-
-
-# for those whose 1st cancer was non-melanoma skin cancer but had a significant second or third cancer,
-# we take the second or third cancer (whichever cane first in their history) as the primary cancer
-
-mcqall.bcd.2<-mcqall.bcd%>%
-  mutate(PrimaryCA = ifelse(PrimaryCA == 'Non-Melanoma Skin' & is.na(CATYPEB)==F, CATYPEB, PrimaryCA))
-
-
-# make group site variable
-
-View(mcqall.bcd.[which(mcqall.bcd.2$PrimaryCA=='Non-Melanoma Skin' & is.na(mcqall.bcd.2$CATYPEB)==F),])
-View(mcqall.bcd.2[which(mcqall.bcd.2$PrimaryCA=='Non-Melanoma Skin' & is.na(mcqall.bcd.2$CATYPEB)==F),])
-
-View(mcqall.bcd.2[which(mcqall$CATYPEA =='Non-Melanoma Skin' | mcqall$CATYPEB =='Non-Melanoma Skin' | mcqall$CATYPEC =='Non-Melanoma Skin' ),])
-View(mcqall.bcd.2[which(mcqall$CATYPEA =='Non-Melanoma Skin' | mcqall$CATYPEB =='Non-Melanoma Skin' | mcqall$CATYPEC =='Non-Melanoma Skin' ),])
 
 # ref: https://mdpi-res.com/d_attachment/cancers/cancers-13-03368/article_deploy/cancers-13-03368-v2.pdf?version=1625568797
 mcqall.bcd <- mcqall.bcd%>%
