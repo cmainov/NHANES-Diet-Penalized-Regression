@@ -1384,4 +1384,4 @@ d <- left_join( demoall, mcqall.bcd[, -which( colnames( mcqall.bcd ) == 'RIDAGEY
 
 # Save
 setwd( '/Volumes/My Passport for Mac/Arthur Lab/FPED Raw Data/Analysis files/GitHub Repository Files /NHANES-Diet-Penalized-Regression/Data-Wrangled' )
-saveRDS( d, '02-Covariates-Wrangled' )
+saveRDS( d, '02-Covariates-Wrangled.rds' )
