@@ -115,13 +115,13 @@ caonly <- x.data[ which( x.data$Diet.ext.ind.reg == 1 ), ]
 
 # set categories to numerical for glmnet model
 
-caonly <- caonly%>%
+caonly <- caonly %>%
   mutate( FoodAsstPnowic = ifelse( FoodAsstPnowic =='yes', 1,
-                               ifelse( FoodAsstPnowic =='no', 0, NA ) ) )%>%
+                               ifelse( FoodAsstPnowic =='no', 0, NA ) ) ) %>%
   mutate( Agecat = ifelse( Agecat =='elderly', 1,
-                       ifelse( Agecat =='non-elderly', 0, NA ) ) )%>%
+                       ifelse( Agecat =='non-elderly', 0, NA ) ) ) %>%
   mutate( BinFSH = ifelse( BinFoodSecHH =='Low', 1,
-                       ifelse( BinFoodSecHH =='High', 0, NA ) ) )%>%
+                       ifelse( BinFoodSecHH =='High', 0, NA ) ) ) %>%
   mutate( HHSize_bin = ifelse( HHSize>= 5, 1,
                            ifelse( HHSize<5, 0, NA ) ) )
 
@@ -148,12 +148,12 @@ seqn.column <- which( colnames( caonly ) =='SEQN' )
 ### ADJUSTMENT FOR TOTAL ENERGY INTAKE PRIOR TO EXTRACTION ###
 # divide by total energy intake for multivariate density approach to energy adjustment
 for ( j in fdgrp.columns ){# ensure proper variables are indicated by the column index in this line of code before proceeding
-  caonly[ , j ] <- caonly[ , j ]/caonly[ , kcal.column ]
+  caonly[ , j ] <- caonly[ , j ] / caonly[ , kcal.column ]
 }
 
 # center and scale food group variables before regressions
 for ( j in fdgrp.columns ){# ensure proper variables are indicated by the column index in this line of code before proceeding
-  caonly[ , j ] <- ( caonly[ , j ]-mean( caonly[ , j ], na.rm = T ) )/sd( caonly[ , j ], na.rm = T )
+  caonly[ , j ] <- ( caonly[ , j ]-mean( caonly[ , j ], na.rm = T ) ) / sd( caonly[ , j ], na.rm = T )
 }
 
 
@@ -171,7 +171,7 @@ par( mfrow = c( 2, 2 ), mar = c( 3, 3, 2, 1 ) )
 mat <- na.omit( as.matrix( caonly[ , c( fdgrp.columns, fs.outcome.column, weight.column ) ] ) )
 xmat <- mat[ , 1:26 ] # food grps
 yvec <- mat[ , 27 ] # binary response
-xwts <- mat[ , 28 ]/mean( mat[ , 28 ] ) # normalize weights
+xwts <- mat[ , 28 ] / mean( mat[ , 28 ] ) # normalize weights
 
 fsoc <- enet_pat( xmat, yvec, xwts, plot.title ='Food Insecurity' ) 
 
@@ -187,7 +187,7 @@ legend( "topright", # Add legend to plot
 mat <- na.omit( as.matrix( caonly[ , c( fdgrp.columns, age.outcome.column, weight.column ) ] ) )
 xmat <- mat[ , 1:26 ] # food grps
 yvec <- mat[ , 27 ] # binary response
-xwts <- mat[ , 28 ]/mean( mat[ , 28 ] ) # normalize weights
+xwts <- mat[ , 28 ] / mean( mat[ , 28 ] ) # normalize weights
 ageoc <- enet_pat( xmat, yvec, xwts, plot.title = 'Age' )
 
 
@@ -196,7 +196,7 @@ ageoc <- enet_pat( xmat, yvec, xwts, plot.title = 'Age' )
 mat <- na.omit( as.matrix( caonly[ , c( fdgrp.columns, fdas.outcome.column, weight.column ) ] ) )
 xmat <- mat[ , 1:26 ] # food grps
 yvec <- mat[ , 27 ] # binary response
-xwts <- mat[ , 28 ]/mean( mat[ , 28 ] ) # normalize weights
+xwts <- mat[ , 28 ] / mean( mat[ , 28 ] ) # normalize weights
 fdasoc <- enet_pat( xmat, yvec, xwts, plot.title = 'Food Assistance ( SNAP )' )
 
 
@@ -204,21 +204,23 @@ fdasoc <- enet_pat( xmat, yvec, xwts, plot.title = 'Food Assistance ( SNAP )' )
 mat <- na.omit( as.matrix( caonly[ , c( fdgrp.columns, hhsize.outcome.column, weight.column ) ] ) )
 xmat <- mat[ , 1:26 ] # food grps
 yvec <- mat[ , 27 ] # binary response
-xwts <- mat[ , 28 ]/mean( mat[ , 28 ] ) # normalize weights
+xwts <- mat[ , 28 ] / mean( mat[ , 28 ] ) # normalize weights
 hhssoc <- enet_pat( xmat, yvec, xwts, plot.title ='Household Size' )
 
 # save plot
 dev.off( )
 
-# Generate Scores
 
-# generate score on data for survival analysis
-xmatrix <- as.matrix( x.data[ which( x.data$Diet.ext.ind.reg == 1 ), c( fdgrp.columns, kcal.column ) ] )
-surv.data <- x.data[ which( x.data$Diet.ext.ind.reg == 1 ), ]
+
+#################### Generate Pattern Scores in the Data #################### 
+
+# generate scores on data
+xmatrix <- as.matrix( x.data[ which( x.data$Diet.ext.ind.reg == 1 ), c( fdgrp.columns, kcal.column ) ] ) # subset as a matrix
+d <- x.data[ which( x.data$Diet.ext.ind.reg == 1 ), ] # keep only those satisfying inclusions/exclusions
 
 # divide fd grps by kcal
 for ( i in 1:( ncol( xmatrix )-1 ) ){
-  xmatrix[ , i ] <- ( xmatrix[ , i ]/xmatrix[ , ncol( xmatrix ) ] )
+  xmatrix[ , i ] <- ( xmatrix[ , i ] / xmatrix[ , ncol( xmatrix ) ] )
 }
 
 # remove kcal column
@@ -226,38 +228,43 @@ xmatrix <- xmatrix[ , -ncol( xmatrix ) ]
 
 # center and scale testing data before generating scores
 for ( i in 1:ncol( xmatrix ) ){
-  xmatrix[ , i ] <- ( xmatrix[ , i ]-mean( xmatrix[ , i ], na.rm = T ) )/sd( xmatrix[ , i ], na.rm = T )
+  xmatrix[ , i ] <- ( xmatrix[ , i ] - mean( xmatrix[ , i ], na.rm = T ) ) / sd( xmatrix[ , i ], na.rm = T )
 }
 
 
 
-surv.data$FS_ENet <- t( fsoc %*% t( xmatrix ) )
-surv.data$Age_ENet <- t( ageoc %*% t( xmatrix ) )
-surv.data$FdAs_ENet <- t( fdasoc %*% t( xmatrix ) )
-surv.data$HHS_ENet <- t( hhssoc %*% t( xmatrix ) )
+d$FS_ENet <- t( fsoc$coefs %*% t( xmatrix ) )
+d$Age_ENet <- t( ageoc$coefs %*% t( xmatrix ) )
+d$FdAs_ENet <- t( fdasoc$coefs %*% t( xmatrix ) )
+d$HHS_ENet <- t( hhssoc$coefs %*% t( xmatrix ) )
 
 
 
 # Save loading matrices
 
-cfenet <- round( data.frame( fs = fsoc,
-                         age = ageoc,
-                         fdas = fdasoc,
-                         hhs = hhssoc ), digits = 2 )
-View( cfenet )
+cfenet <- round( data.frame( fs = fsoc$coefs,
+                         age = ageoc$coefs,
+                         fdas = fdasoc$coefs,
+                         hhs = hhssoc$coefs ), digits = 2 )
+
 
 setwd( "/Volumes/My Passport for Mac/Arthur Lab/FPED Raw Data/Analysis files/GitHub Repository Files /NHANES-Diet-Penalized-Regression/Manuscript/Tables" )
-write.table( cfenet, "Enet_Factorloadings.txt", sep =", ", row.names = FALSE )
+write.table( cfenet, "Enet-factor-loadings.txt", sep =", ", row.names = FALSE )
 
 
-############################## Now create patterns with PCA
 
 
-pca.data <- x.data[ !is.na( x.data$WTDR18YR ) == T, ] # subset since svy procedures require all rows in data
+##############################################################################
+######################## Patterns Extraction with PCA ########################
+##############################################################################
+
+
+# ensure all rows have a sample weight present before using `survey` functions
+pca.data <- x.data[ !is.na( x.data$WTDR18YR ) == T, ] 
 
 # divide by total energy intake for multivariate density approach
 for ( j in fdgrp.columns ){# ensure proper variables are indicated by the column index in this line of code before proceeding
-  pca.data[ , j ] <- pca.data[ , j ]/pca.data[ , kcal.column ]
+  pca.data[ , j ] <- pca.data[ , j ] / pca.data[ , kcal.column ]
 }
 
 # to have weights and no missing weights
@@ -265,39 +272,39 @@ for ( j in fdgrp.columns ){# ensure proper variables are indicated by the column
 pca.design <- svydesign( id = ~SDMVPSU, weights = ~WTDR18YR, strata = ~SDMVSTRA, 
                        nest = TRUE, survey.lonely.psu = "adjust", data = pca.data )
 
-varest <- subset( pca.design, Diet.ext.ind.pca == 1 )# inclusions
+varest <- subset( pca.design, Diet.ext.ind.pca == 1 ) # inclusions
 
 
+# PCA using svyprcomp
+pcaobj <- svyprcomp( ~ ProcessedMts + Meat + Poultry + Fish_Hi + Fish_Lo + Eggs + SolidFats + Oils + 
+                    Milk + Yogurt + Cheese + Alcohol + FruitOther + F_CitMelBer + Tomatoes + GreenLeafy + 
+                    DarkYlVeg + OtherVeg + Potatoes + OtherStarchyVeg + Legumes + Soy + RefinedGrain + 
+                    WholeGrain + Nuts + AddedSugars, design = varest, center = T,
+                    scale = T, 
+                    scores = TRUE )
 
+# scree plot
+# eigenvalues/Scree plot
+plot( pcaobj$sdev, type = 'b',
+     main = 'Scree Plot for Diet Patterns PCA', xlab = 'Component', ylab = 'Eigenvalue' )
+abline( h = 1, lty = 2 )
+# elbow present after the second principal component
 
-####################################### DIETARY PATTERNS EXTRACTION ###################################
-
-
-# PCA
-pcaobj <- svyprcomp( ~ProcessedMts+Meat+Poultry+Fish_Hi+Fish_Lo+Eggs+SolidFats+Oils+
-                    Milk+Yogurt+Cheese+Alcohol+FruitOther+F_CitMelBer+Tomatoes+GreenLeafy+
-                    DarkYlVeg+OtherVeg+Potatoes+OtherStarchyVeg+Legumes+Soy+RefinedGrain+
-                    WholeGrain+Nuts+AddedSugars, design = varest, center = T, scale = T, scores = TRUE )
-
-
-
+# assign factor loading matrix
 coefspc <- pcaobj$rotation
 
-# save raw loadings matrix
-write.table( round( coefspc[ , 1:2 ], digits = 2 ), "PCA_Factorloadings.txt", sep =", ", row.names = FALSE )
+# save raw loading matrix
+write.table( round( coefspc[ , 1:2 ], digits = 2 ), "PCA-Factorloadings.txt", sep =", ", row.names = FALSE )
 
 
-sum( pcaobj$sdev[ 1:2 ]/sum( pcaobj$sdev ) ) # percent of variation accounted for by first two components ( 0.1913 )
+sum( pcaobj$sdev[ 1:2 ] / sum( pcaobj$sdev ) ) # percent of variation accounted for by first two components ( 0.1412 )
 
-# generate score on data for survival analysis
 # Generate Scores
-
-# generate score on data for survival analysis
 xmatrix <- as.matrix( x.data[ which( x.data$Diet.ext.ind.reg == 1 ), c( fdgrp.columns, kcal.column ) ] )
 
 # divide fd grps by kcal
-for ( i in 1:( ncol( xmatrix )-1 ) ){
-  xmatrix[ , i ] <- ( xmatrix[ , i ]/xmatrix[ , ncol( xmatrix ) ] )
+for ( i in 1:( ncol( xmatrix ) - 1 ) ){
+  xmatrix[ , i ] <- ( xmatrix[ , i ] / xmatrix[ , ncol( xmatrix ) ] )
 }
 
 # remove kcal column
@@ -305,32 +312,29 @@ xmatrix <- xmatrix[ , -ncol( xmatrix ) ]
 
 # center and scale testing data before generating scores
 for ( i in 1:ncol( xmatrix ) ){
-  xmatrix[ , i ] <- ( xmatrix[ , i ]-mean( xmatrix[ , i ], na.rm = T ) )/sd( xmatrix[ , i ], na.rm = T )
+  xmatrix[ , i ] <- ( xmatrix[ , i ] - mean( xmatrix[ , i ], na.rm = T ) ) / sd( xmatrix[ , i ], na.rm = T )
 }
 
-surv.data$PC1 <- t( coefspc[ , 1 ] %*% t( xmatrix ) )
-surv.data$PC2 <- t( coefspc[ , 2 ] %*% t( xmatrix ) )
+d$PC1 <- t( coefspc[ , 1 ] %*% t( xmatrix ) )
+d$PC2 <- t( coefspc[ , 2 ] %*% t( xmatrix ) )
 
 ## Add to original data and save
 
-x.data3 <- left_join( xdata, surv.data[ , c( "SEQN", "FS_ENet", "Age_ENet",
-                                      "FdAs_ENet", "HHS_ENet", "PC1", "PC2" ) ] )
-
-
-
-# Save data for further survival analysis
-
 setwd( "/Volumes/My Passport for Mac/Arthur Lab/FPED Raw Data/Analysis files/GitHub Repository Files /NHANES-Diet-Penalized-Regression/Data-Wrangled" )
 
-# Save dataset with all dietary patterns
-saveRDS( x.data3, "04-Analytic-Data.rds" )
+( x.data3 <- left_join( xdata, d[ , c( "SEQN", "FS_ENet", "Age_ENet",
+                                      "FdAs_ENet", "HHS_ENet", "PC1", "PC2" ) ] ) ) %>%
+  saveRDS( ., "04-Analytic-Data.rds" )
 
 
 
-#####  PEARSON CORRELATION MATRIX ( TABLE 3 ) #####
+##############################################################################
+################## Pearson Correlation Matrix (Table 3) PCA ##################
+##############################################################################
 
-# subset individuals included in survival analysis
-cordata <- x.data3[ which( x.data3$Diet.ext.ind.pca == 1 ), ]
+
+# subset individuals meeting criteria
+cordata <- x.data3[ which( x.data3$Diet.ext.ind.reg == 1 ), ]
 
 # food group column indices
 fdgrp.columns <- which( colnames( cordata ) %in% c( "ProcessedMts", "Meat", "Poultry", "Fish_Hi", "Fish_Lo",
@@ -347,12 +351,12 @@ fdgrp.columns <- fdgrp.columns[ c( 1, 26, 2:25 ) ] # re-arrange so that Meat col
 ### ADJUSTMENT FOR TOTAL ENERGY ###
 # divide by total energy intake for multivariate density approach to energy adjustment
 for ( j in fdgrp.columns ){# ensure proper variables are indicated by the column index in this line of code before proceeding
-  cordata[ , j ] <- cordata[ , j ]/cordata[ , kcal.column ]
+  cordata[ , j ] <- cordata[ , j ] / cordata[ , kcal.column ]
 }
 
 # center and scale food group variables before correlation analysis
 for ( j in fdgrp.columns ){# ensure proper variables are indicated by the column index in this line of code before proceeding
-  cordata[ , j ] <- ( cordata[ , j ]-mean( cordata[ , j ], na.rm = T ) )/sd( cordata[ , j ], na.rm = T )
+  cordata[ , j ] <- ( cordata[ , j ] - mean( cordata[ , j ], na.rm = T ) ) / sd( cordata[ , j ], na.rm = T )
 }
 
 # re-join adjusted, centered, and scaled variables to original data
@@ -363,7 +367,7 @@ cordat2 <- left_join( x.data3[ , -fdgrp.columns ], cordata[ , c( 1, fdgrp.column
 mod.data <- cordat2[ !is.na( cordat2$WTDR18YR ) == T, ]
 mod1 <- svydesign( id = ~SDMVPSU, weights = ~WTDR18YR, strata = ~SDMVSTRA, 
                 nest = TRUE, survey.lonely.psu = "adjust", data = mod.data )
-mod1 <- subset( mod1, Diet.ext.ind.pca == 1 )# inclusions
+mod1 <- subset( mod1, Diet.ext.ind.reg == 1 )# inclusions
 
 
 
@@ -384,8 +388,11 @@ diet.patt.names <- c( "FS_ENet", "Age_ENet",
 
 # Correlation Coefficients
 corr.matrix <- matrix( NA, ncol = length( diet.patt.names ), nrow = length( fdgrp.diet.names ) )
+
 for ( g in 1:length( diet.patt.names ) ){
-loadings.vector <- vector( )
+
+  loadings.vector <- vector( )
+
 for ( i in 1:length( fdgrp.diet.names ) ){
   loadings.vector[ i ] <- round( svycor( as.formula( paste0( "~", fdgrp.diet.names[ i ], "+", diet.patt.names[ g ] ) ), design = mod1 )$cors[ 2 ], digits = 2 )
 }
@@ -395,6 +402,7 @@ corr.matrix[ , g ] <- loadings.vector
 
 ## Text process correlation matrix
 # Assign column names and rownames to matrix
+
 colnames( corr.matrix ) <- diet.patt.names
 rownames( corr.matrix ) <- fdgrp.diet.names
 
@@ -406,12 +414,14 @@ corr.matrix.b[ corr.matrix.b =="0" ] <- "0.00"
 
 # Eliminate excess trailing zeros
 for ( i in 1:ncol( corr.matrix.b ) ){
+  
   corr.matrix.b[ , i ] <- str_replace( corr.matrix.b[ , i ], "( ?<=\\.\\d\\d )0", "" )
+  
 }
 
 # Replace NA"s with "--"
 corr.matrix.b[ corr.matrix.b ==" NA" ] <- "--"
 
-setwd( "/Volumes/My Passport for Mac/Arthur Lab/FPED Raw Data/Analysis files/GitHub Repository Files /NHANES_FI_CA_Diet/Tables" )
+setwd( "/Volumes/My Passport for Mac/Arthur Lab/FPED Raw Data/Analysis files/GitHub Repository Files /NHANES-Diet-Penalized-Regression/Manuscript/Tables" )
 write.table( corr.matrix.b, "corr_matrix.txt", sep =", ", row.names = FALSE )
 
