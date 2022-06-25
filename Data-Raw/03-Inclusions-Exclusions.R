@@ -55,7 +55,7 @@ ex.2a <- nrow( step2a.data )
   summarise( subjects.remaining = n( ) , subjects.excluded = ex.2a - n( ) )
 
 # subjects.remaining subjects.excluded
-#               3382               577
+#               3382               576
 
 ex.2b <- nrow( step2b.data )
 
@@ -72,7 +72,7 @@ ex.2b <- nrow( step2b.data )
   summarise( subjects.remaining = n( ) , subjects.excluded = ex.2b - n( ) )
 
 # subjects.remaining subjects.excluded
-#               3378                 4
+#               3379                 4
 
 ex.2c <- nrow( step2c.data )
 
@@ -95,7 +95,7 @@ ex.2c <- nrow( step2c.data )
   summarise( subjects.remaining = n( ) , subjects.excluded = ex.2c - n( ) )
 
 # subjects.remaining subjects.excluded
-#               3316                62
+#               3317                62
 
 
 
@@ -107,7 +107,7 @@ ex.2c <- nrow( step2c.data )
 
 step3.data %>%
   count( Diet.ext.ind.reg )
-# n = 3316
+# n = 3317
 
 ## Sample Size for Dietary Patterns Extraction with Principal Components Analysis ( PCA ) ##
 

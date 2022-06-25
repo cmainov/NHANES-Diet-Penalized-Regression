@@ -237,7 +237,7 @@ mcqall.bcd %>%
 # SEQN = 66141 has 2 cancer diagnoses but missing age at second diagnosis. We will assume
 # his first diagnosis was his first and group him based on it
 mcqall.bcd <- mcqall.bcd %>%
-  mutate( PrimaryCA = ifelse( SEQN == 66141, CATYPEA, PrimaryCA ) )
+  mutate( PrimaryCA = factor( ifelse( SEQN == 66141, paste0( CATYPEA ), as.character( PrimaryCA ) ) ) ) 
 
 `%notin%` <- Negate( `%in%` ) # use this operator in subsequent code chunk
 
