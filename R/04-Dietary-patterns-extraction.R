@@ -423,5 +423,5 @@ for ( i in 1:ncol( corr.matrix.b ) ){
 corr.matrix.b[ corr.matrix.b ==" NA" ] <- "--"
 
 setwd( "/Volumes/My Passport for Mac/Arthur Lab/FPED Raw Data/Analysis files/GitHub Repository Files /NHANES-Diet-Penalized-Regression/Manuscript/Tables" )
-write.table( corr.matrix.b, "corr_matrix.txt", sep =", ", row.names = FALSE )
+write.table( corr.matrix.b, "corr_matrix.txt", sep =",", row.names = FALSE )
 
