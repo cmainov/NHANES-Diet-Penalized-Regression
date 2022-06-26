@@ -320,7 +320,7 @@ d$PC2 <- t( coefspc[ , 2 ] %*% t( xmatrix ) )
 
 ## Add to original data and save
 
-setwd( "/Volumes/My Passport for Mac/Arthur Lab/FPED Raw Data/Analysis files/GitHub Repository Files /NHANES-Diet-Penalized-Regression/Data-Wrangled" )
+setwd( "/Volumes/My Passport for Mac/Arthur Lab/FPED Raw Data/Analysis files/GitHub Repository Files /NHANES-Diet-Penalized-Regression/Data-Rodeo" )
 
 ( x.data3 <- left_join( xdata, d[ , c( "SEQN", "FS_ENet", "Age_ENet",
                                       "FdAs_ENet", "HHS_ENet", "PC1", "PC2" ) ] ) ) %>%
