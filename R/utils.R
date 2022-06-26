@@ -1,63 +1,66 @@
 ###---------------------------------------------------
-###   RESULT-GENERATING FUNCTIONS
+###   RESULT-GENERATING AND OTHER HELPER FUNCTIONS
 ###---------------------------------------------------
+
+####################################################################################################
+#################################### Quantile Cutting Function #####################################
+####################################################################################################
+
+quant_cut<-function(var,x,df){
+  
+  xvec<-vector() # initialize null vector to store
+  
+  for (i in 1:x){
+    xvec[i]<-i/x
+  }
+  
+  qs<-c(min(df[[var]],na.rm=T), quantile(df[[var]],xvec,na.rm=T))
+  
+  df[['new']]=x+1 #initialize variable
+  
+  for (i in 1:(x)){
+    df[['new']]<-ifelse(df[[var]]<qs[i+1] & df[[var]]>=qs[i],
+                        c(1:length(qs))[i],
+                        ifelse(df[[var]]==qs[qs==max(qs)],x,df[['new']]))
+  }
+  
+  return(df[['new']])
+}
+
+
+####################################################################################################
+#################################### Trend Variable Function #######################################
+####################################################################################################
+
+trend_func<-function(rank.var,cont.var,df,trend.var,x){
+  
+  df[[trend.var]] = 1
+  
+  medians<-vector()
+  
+  for (i in 1:x){
+    
+    newdf<-df[df[[rank.var]]==i,]
+    
+    medians[i]<-median(newdf[[cont.var]],na.rm=T)
+    
+    df[[trend.var]]<-ifelse(df[[rank.var]]==i,medians[i],df[[trend.var]])
+    
+  }
+  
+  return(df)
+}
+
+####################################################################################################
+########################## Model Fitting and Results-Tabulating Function ###########################
+####################################################################################################
 
 results_function<-function(df, covariates, variables, cuts, subset.condition=NULL ) {
   
   start_time <- Sys.time( )# document start times
   
   import::from(magrittr, '%>%')
-  
-  ################################################################################################################
-  ########################### START reading helper functions into function environment ###########################
-  ################################################################################################################
-  
-  ## quantile cutting function ##
-  quant_cut<-function(var,x,df){
-    
-    xvec<-vector() # initialize null vector to store
-    
-    for (i in 1:x){
-      xvec[i]<-i/x
-    }
-    
-    qs<-c(min(df[[var]],na.rm=T), quantile(df[[var]],xvec,na.rm=T))
-    
-    df[['new']]=x+1 #initialize variable
-    
-    for (i in 1:(x)){
-      df[['new']]<-ifelse(df[[var]]<qs[i+1] & df[[var]]>=qs[i],
-                          c(1:length(qs))[i],
-                          ifelse(df[[var]]==qs[qs==max(qs)],x,df[['new']]))
-    }
-    
-    return(df[['new']])
-  }
-  
-  
-  ## trend variable-creating function ##
-  trend_func<-function(rank.var,cont.var,df,trend.var,x){
-    
-    df[[trend.var]]=1
-    
-    medians<-vector()
-    
-    for (i in 1:x){
-      
-      newdf<-df[df[[rank.var]]==i,]
-      
-      medians[i]<-median(newdf[[cont.var]],na.rm=T)
-      
-      df[[trend.var]]<-ifelse(df[[rank.var]]==i,medians[i],df[[trend.var]])
-      
-    }
-    
-    return(df)
-  }
-  ##################################################################################################################
-  ########################################## END reading helper functions ##########################################
-  ##################################################################################################################
-  
+
   
   # index names and naming index quantile variables to be introduced into data
   var.names<-variables
@@ -230,3 +233,5 @@ results_function<-function(df, covariates, variables, cuts, subset.condition=NUL
   
   return(list(results=out.results))
 }
+
+
