@@ -16,7 +16,7 @@ quant_cut<-function(var,x,df){
   
   qs<-c(min(df[[var]],na.rm=T), quantile(df[[var]],xvec,na.rm=T))
   
-  df[['new']]=x+1 #initialize variable
+  df[['new']]=x+1 # initialize variable
   
   for (i in 1:(x)){
     df[['new']]<-ifelse(df[[var]]<qs[i+1] & df[[var]]>=qs[i],
