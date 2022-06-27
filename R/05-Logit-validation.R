@@ -37,12 +37,13 @@ results_function(df=dat,
 ## Restricted-Cubic Spline Curves for Logistic Regression Models
 
 dat.sub <- dat %>%
-  dplyr::filter(Diet.ext.ind.reg==1) # use datasubset for this section
+  dplyr::filter(Diet.ext.ind.reg==1) %>% # use data inclusions/exclusions subset for this section
+  dplyr::mutate(wts.norm = WTDR18YR / mean(WTDR18YR)) # create normalized weights
 
 dat.sub$PrimaryCAGroup<-droplevels(dat.sub$PrimaryCAGroup) # drop levels with zero observations
 
 logit_splines(df=dat.sub, x='FS_ENet', y='BinFoodSecHH', knots=5, covariates=covars.logit, 
-              wts='WTDR18YR', referent='median')
+              wts='wts.norm', referent='median')
 
 #Save
 setwd('/Volumes/My Passport for Mac/Arthur Lab/FPED Raw Data/Analysis files/GitHub Repository Files /NHANES_FI_CA_Diet/Figures')
