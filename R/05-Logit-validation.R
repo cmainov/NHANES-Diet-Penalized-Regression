@@ -36,6 +36,11 @@ results_function(df=dat,
 
 ## Restricted-Cubic Spline Curves for Logistic Regression Models
 
+dat.sub <- dat %>%
+  dplyr::filter(Diet.ext.ind.reg==1) # use datasubset for this section
+
+dat.sub$PrimaryCAGroup<-droplevels(dat.sub$PrimaryCAGroup) # drop levels with zero observations
+
 logit_splines(df=dat.sub, x='FS_ENet', y='BinFoodSecHH', knots=5, covariates=covars.logit, 
               wts='WTDR18YR', referent='median')
 
