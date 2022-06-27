@@ -235,3 +235,49 @@ results_function<-function(df, covariates, variables, cuts, subset.condition=NUL
 }
 
 
+
+
+####################################################################################################
+##################################### RCS Plotting Function ########################################
+####################################################################################################
+
+
+logit_splines <- function(df, x, y, knots, covariates, wts, referent='median'){
+  
+  df$x<-as.numeric(eval(parse(text=paste0('df$',x))))
+  
+  dd <- rms::datadist(df)
+  dd$limits$x[2] <- unique(df[GenKern::nearest(df$x,eval(parse(text=paste0(referent,"( ","df$x,na.rm=T)")))),'x'] )
+  options(datadist = "dd")
+  
+  # Fit logit model with spline term
+  modelspline<-rms::lrm(formula(glue::glue('{y} ~ rms::rcs( x, {knots} ) + ',
+                                           paste0(covariates,collapse='+'))),
+                        data=df,
+                        weights=get(wts),
+                        normwt = T)
+  
+  pdata1 <- rms::Predict(modelspline, 
+                         x,
+                         ref.zero = TRUE, 
+                         fun = exp)
+  
+  newdf<-data.frame(pdata1)
+  newdf$relative<-1
+  newdf$all<-'Reference (HR=1)'
+  newdf$ci<-'95% Confidence Bounds'
+  
+  ggplot2::ggplot(data=newdf,mapping=aes(x=x,y=yhat))+
+    geom_line(size=0.8)+
+    geom_ribbon(aes(ymin=lower, ymax=upper,col=ci,fill=ci), alpha=0.2)+
+    theme_classic()+
+    geom_line(aes(y=relative, x=x,linetype=all))+
+    scale_linetype_manual(values=c('dashed'))+
+    theme(legend.position=c(0.34,0.8),
+          text=element_text(family='Avenir'),
+          legend.title=element_blank(),
+          legend.spacing.y =unit(0.01,'cm'),
+          legend.text = element_text(size=8))+
+    coord_cartesian(ylim=c(0,max=(max(newdf$yhat)*3)))+
+    labs(x=pattern.labels[i], y='Odds Ratio (Food Insecure)')
+}
