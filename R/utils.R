@@ -2,6 +2,10 @@
 ###   RESULT-GENERATING AND OTHER HELPER FUNCTIONS
 ###---------------------------------------------------
 
+
+########## %notin% operator #########
+`%notin%` <- Negate( `%in%` )
+
 ####################################################################################################
 #################################### Quantile Cutting Function #####################################
 ####################################################################################################
@@ -55,7 +59,7 @@ trend_func<-function(rank.var,cont.var,df,trend.var,x){
 ########################## Model Fitting and Results-Tabulating Function ###########################
 ####################################################################################################
 
-results_function<-function(df, covariates, variables, cuts, subset.condition=NULL ) {
+results_function<-function(df, covariates, variables, y, cuts, subset.condition=NULL,... ) {
   
   start_time <- Sys.time( )# document start times
   
@@ -77,11 +81,15 @@ results_function<-function(df, covariates, variables, cuts, subset.condition=NUL
   
   else if (is.null( subset.condition )==F){
     
-    df.sub<-df[which(eval(parse(text=paste0('df$',subset.condition)))),] 
+    attach(df) # attach to forgo use of the dollar sign operator
+    df.sub<-df[which(eval(parse(text=paste0(subset.condition)))),] 
+    
+    # remove any variables we are subsetting on from the vector of covariates
+    covariates <- covariates[ which( covariates %notin% unlist( str_split(subset.condition,"\\s") ) ) ]
     
   }
   
-  # create quantile, trend, standardized, and transformed (square) variables on data subset
+  # create quantile, trend, standardized, and transformed (square) variables on data subset to use in regressions
   for(i in 1:length(variables)){
     
     df.sub[,var.names.q[i]]<-quant_cut(var = var.names[i],
@@ -110,19 +118,19 @@ results_function<-function(df, covariates, variables, cuts, subset.condition=NUL
   model.list<- list() # empty list to store results
   for(i in 1:length(var.names)){
     
-    modelfull<-survey::svyglm(formula(paste0('BinFoodSecHH~factor(',var.names[i],'_q)+',
+    modelfull<-survey::svyglm(formula(paste0( y, '~factor(',var.names[i],'_q)+',
                                              paste0(covariates,collapse = '+'))),
                               design=design,
                               family = 'quasibinomial')
-    modelfulla_T<-survey::svyglm(formula(paste0('BinFoodSecHH~',var.names[i],'_trend+',
+    modelfulla_T<-survey::svyglm(formula(paste0( y, '~',var.names[i],'_trend+',
                                                 paste0(covariates,collapse = '+'))),
                                  design=design,
                                  family = 'quasibinomial')
-    modelfulla_L<-survey::svyglm(formula(paste0('BinFoodSecHH~',var.names[i],'_sc+',
+    modelfulla_L<-survey::svyglm(formula(paste0( y, '~',var.names[i],'_sc+',
                                                 paste0(covariates,collapse = '+'))),
                                  design=design,
                                  family = 'quasibinomial')
-    modelfulla_L2<-survey::svyglm(formula(paste0('BinFoodSecHH~',var.names[i],'_sc2+',
+    modelfulla_L2<-survey::svyglm(formula(paste0( y, '~',var.names[i],'_sc2+',
                                                  paste0(covariates,collapse = '+'))),
                                   design=design,
                                   family = 'quasibinomial')
@@ -242,7 +250,8 @@ results_function<-function(df, covariates, variables, cuts, subset.condition=NUL
 ####################################################################################################
 
 
-logit_splines <- function(df, x, y, knots, covariates, wts, referent='median'){
+logit_splines <- function(df, x, y, knots, covariates, wts, referent='median', xlab, ylab,
+                          legend.pos){
   
   df$x<-as.numeric(eval(parse(text=paste0('df$',x))))
   
@@ -255,7 +264,7 @@ logit_splines <- function(df, x, y, knots, covariates, wts, referent='median'){
                                            paste0(covariates,collapse='+'))),
                         data=df,
                         weights=get(wts),
-                        normwt = T)
+                        normwt = T) # normalize weights for survey data
   
   pdata1 <- rms::Predict(modelspline, 
                          x,
@@ -264,7 +273,7 @@ logit_splines <- function(df, x, y, knots, covariates, wts, referent='median'){
   
   newdf<-data.frame(pdata1)
   newdf$relative<-1
-  newdf$all<-'Reference (HR=1)'
+  newdf$all<-'Referent (OR=1)'
   newdf$ci<-'95% Confidence Bounds'
   
   ggplot2::ggplot(data=newdf,mapping=aes(x=x,y=yhat))+
@@ -273,13 +282,13 @@ logit_splines <- function(df, x, y, knots, covariates, wts, referent='median'){
     theme_classic()+
     geom_line(aes(y=relative, x=x,linetype=all))+
     scale_linetype_manual(values=c('dashed'))+
-    theme(legend.position=c(0.34,0.8),
+    theme(legend.position=legend.pos,
           text=element_text(family='Avenir'),
           legend.title=element_blank(),
           legend.spacing.y =unit(0.01,'cm'),
           legend.text = element_text(size=8))+
     coord_cartesian(ylim=c(0,max=(max(newdf$yhat)*3)))+
-    labs(x=pattern.labels[i], y='Odds Ratio (Food Insecure)')
+    labs( x=xlab, y=ylab )
 }
 
 
