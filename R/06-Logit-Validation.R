@@ -1,5 +1,5 @@
 ###---------------------------------------------------
-###   05-VALIDATION: BINARY LOGISTIC REGRESSION
+###   06-VALIDATION: BINARY LOGISTIC REGRESSION
 ###---------------------------------------------------
 
 library( tidyverse )
