@@ -89,8 +89,8 @@ ex.2c <- nrow( step2c.data )
            is.na( BinFoodSecHH ) == F &
            is.na( HHSize ) == F &
            is.na( Agecat ) == F ) %>%
-    mutate( Diet.ext.ind.reg = 1,
-            Diet.ext.ind.pca = ifelse( BinFoodSecHH == 'Low', 1, 0 ) ) %>%
+    mutate( Diet.ext.ind.reg = 1, # sample for penalized logit and validation
+            Diet.ext.ind.pca = ifelse( BinFoodSecHH == 'Low', 1, 0 ) ) %>% # samples for PCA
     data.frame( ) ) %>%
   summarise( subjects.remaining = n( ) , subjects.excluded = ex.2c - n( ) )
 
@@ -109,10 +109,14 @@ step3.data %>%
   count( Diet.ext.ind.reg )
 # n = 3317
 
+ex3 <- nrow( step3.data )
+
 ## Sample Size for Dietary Patterns Extraction with Principal Components Analysis ( PCA ) ##
 
 step3.data %>%
-  count( Diet.ext.ind.pca )
+  filter( Diet.ext.ind.pca == 1 )%>%
+  summarise( subjects.remaining = n( ) , subjects.excluded = ex3 - n( ) )
+
 # n = 433
 
 

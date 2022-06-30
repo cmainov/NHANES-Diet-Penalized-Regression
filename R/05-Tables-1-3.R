@@ -2,95 +2,95 @@
 ###   05-VALIDATION: TABLES 1 AND 3
 ###---------------------------------------------------
 
-library(tidyverse)
-library(survey)
+library( tidyverse )
+library( survey )
 
 
-wd <- "/Volumes/My Passport for Mac/Arthur Lab/FPED Raw Data/Analysis files/GitHub Repository Files /NHANES-Diet-Penalized-Regression/"
-setwd( paste0(wd,"Data-Rodeo") )
+wd  <- "/Volumes/My Passport for Mac/Arthur Lab/FPED Raw Data/Analysis files/GitHub Repository Files /NHANES-Diet-Penalized-Regression/"
+setwd( paste0( wd, "Data-Rodeo" ) )
 
-dat <- readRDS( "04-Analytic-Data.rds" ) %>%
+dat  <- readRDS( "04-Analytic-Data.rds" ) %>%
   dplyr::filter( is.na( WTDR18YR ) == F ) # subset to those having non-missing weights 
 
-nhc<-svydesign(id = ~SDMVPSU, weights = ~WTDR18YR, strata = ~SDMVSTRA, 
-               nest = TRUE, survey.lonely.psu = "adjust", data = dat)
+nhc <- svydesign( id = ~SDMVPSU, weights = ~WTDR18YR, strata = ~SDMVSTRA, 
+               nest = TRUE, survey.lonely.psu = "adjust", data = dat )
 
-# create three subsets, food insecure with cancer (fiw), food secure with cancer (fsw), and combined 
+# create three subsets, food insecure with cancer ( fiw ), food secure with cancer ( fsw ), and combined 
 # food secure and insecure cancer survivors
-fiw<-subset(nhc,BinFoodSecHH=='Low' & Diet.ext.ind.reg==1)
-fsw<-subset(nhc,BinFoodSecHH=='High' & Diet.ext.ind.reg==1)
-gen<-subset(nhc,Diet.ext.ind.reg==1)
+fiw <- subset( nhc, BinFoodSecHH == "Low" & Diet.ext.ind.reg == 1 )
+fsw <- subset( nhc, BinFoodSecHH == "High" & Diet.ext.ind.reg == 1 )
+gen <- subset( nhc, Diet.ext.ind.reg == 1 )
 
 # read in helper functions
 
-setwd( paste0(wd,"R") )
-source('utils.R')
+setwd( paste0( wd, "R" ) )
+source( "utils.R" )
 
 # write function to return table 1
 
-cafs.table1<-function(design, df){
-gender<-epitab(var= 'Gender',data.fr=df,des=design,table.var = 'Gender')
-alcuse<-epitab(var= 'alc_cat',data.fr=df,des=design,table.var='Alcohol Use')
-races<-epitab(var= 'Race',data.fr=df,des=design,table.var = 'Race/Ethnicity')
-smokstat<-epitab(var= 'SmokStat',data.fr=df,des=design,table.var='Smoking Status')
-income<-epitab(var= 'fipr',data.fr=df,des=design,table.var='Income:Poverty')
-education<-epitab(var= 'Education_bin',data.fr=df,des=design,table.var='Education Attained')
-bmi<-epitab.means(cont.var='BMXBMI',des=design,table.var = 'BMI')
-metmins<-epitab.means(cont.var='WeekMetMin',des=design,table.var = 'MET Minutes')
-calor<-epitab.means(cont.var='KCAL',des=design,table.var = 'Calories')
-age<-epitab.means(cont.var='Age',des=design,table.var = 'Age')
-cci<-epitab.means(cont.var='CCI_Score',des=design,table.var = 'CCI')
-site<-epitab(var= 'PrimaryCAGroup',data.fr=df,des=design,table.var='Cancer Site')
-snap<-epitab(var= 'FoodAsstPnowic',data.fr=df,des=design,table.var='SNAP Assistance')
-time<-epitab(var= 'TimeCAFactor',data.fr=df,des=design,table.var='Years Since Diagnosis')
+cafs.table1 <- function( design, df ){
+gender <- epitab( var = "Gender", data.fr = df, des = design, table.var = "Gender" )
+alcuse <- epitab( var = "alc_cat", data.fr = df, des = design, table.var = "Alcohol Use" )
+races <- epitab( var = "Race", data.fr = df, des = design, table.var = "Race/Ethnicity" )
+smokstat <- epitab( var = "SmokStat", data.fr = df, des = design, table.var = "Smoking Status" )
+income <- epitab( var = "fipr", data.fr = df, des = design, table.var = "Income:Poverty" )
+education <- epitab( var = "Education_bin", data.fr = df, des = design, table.var = "Education Attained" )
+bmi <- epitab.means( cont.var = "BMXBMI", des = design, table.var = "BMI" )
+metmins <- epitab.means( cont.var = "WeekMetMin", des = design, table.var = "MET Minutes" )
+calor <- epitab.means( cont.var = "KCAL", des = design, table.var = "Calories" )
+age <- epitab.means( cont.var = "Age", des = design, table.var = "Age" )
+cci <- epitab.means( cont.var = "CCI_Score", des = design, table.var = "CCI" )
+site <- epitab( var = "PrimaryCAGroup", data.fr = df, des = design, table.var = "Cancer Site" )
+snap <- epitab( var = "FoodAsstPnowic", data.fr = df, des = design, table.var = "SNAP Assistance" )
+time <- epitab( var = "TimeCAFactor", data.fr = df, des = design, table.var = "Years Since Diagnosis" )
 
 
-table1<-rbind(age,gender,races,education,income,bmi,metmins,calor,cci,snap,site,time,smokstat,alcuse)
-return(table1)
+table1 <- rbind( age, gender, races, education, income, bmi, metmins, calor, cci, snap, site, time, smokstat, alcuse )
+return( table1 )
 }
 
 # generate table columns for each of the subsets described above
-fiw.tab<-cafs.table1(design=fiw, df=dat)
-fsw.tab<-cafs.table1(design=fsw, df=dat)
-gen.tab<-cafs.table1(design=gen, df=dat)
+fiw.tab <- cafs.table1( design = fiw, df = dat )
+fsw.tab <- cafs.table1( design = fsw, df = dat )
+gen.tab <- cafs.table1( design = gen, df = dat )
 
 # merge columns into table
-final.tab<-cbind(gen.tab, fiw.tab, fsw.tab)
+final.tab <- cbind( gen.tab, fiw.tab, fsw.tab )
 
 
 ## add column for p value for t tests and chi square test ##
 
 # vector of strings containing elements that singal to a given row in the table
-chi <- c( "Smoking", "Alcohol", "Gender", "Income", "Education", "Race",
-          "Years", "Site", "SNAP")
-these <- c( "SmokStat", "alc_cat", "Gender", "fipr", "Education_bin",
-            "Race", "TimeCAFactor", "PrimaryCAGroup", "FoodAsstPnowic")
+chi  <- c( "Smoking", "Alcohol", "Gender", "Income", "Education", "Race",
+          "Years", "Site", "SNAP" )
+these  <- c( "SmokStat", "alc_cat", "Gender", "fipr", "Education_bin",
+            "Race", "TimeCAFactor", "PrimaryCAGroup", "FoodAsstPnowic" )
 
 # chi square
-for (i in 1:length(chi)){
+for ( i in 1:length( chi ) ){
   
-  final.tab[which(str_detect(final.tab[,1], chi[i] )),7]<-ifelse(svychisq(as.formula(paste0("~BinFoodSecHH + ", these[i]) ),design=gen)$p.value < 0.01,'< 0.01',
-                                                                 round(svychisq( as.formula(paste0("~BinFoodSecHH + ", these[i]) ),design=gen)$p.value,digits=2))
+  final.tab[ which( str_detect( final.tab[ , 1 ], chi[i] ) ), 7 ] <- ifelse( svychisq( as.formula( paste0( "~BinFoodSecHH + ", these[i] ) ), design = gen )$p.value < 0.01, "< 0.01",
+                                                                 round( svychisq( as.formula( paste0( "~BinFoodSecHH + ", these[i] ) ), design = gen )$p.value, digits = 2 ) )
   
 }
 
-tt <- c( "Age", "BMI", 'MET', "Calories", "CCI")
-these.b <- c( "Age", "BMXBMI", 'WeekMetMin', "KCAL", "CCI_Score") 
+tt  <- c( "Age", "BMI", "MET", "Calories", "CCI" )
+these.b  <- c( "Age", "BMXBMI", "WeekMetMin", "KCAL", "CCI_Score" ) 
 
 # t test
-for (i in 1:length(tt)){
-  final.tab[which(str_detect(final.tab[,1], tt[i] )),7]<-ifelse(svyttest( as.formula(paste0(these.b[i],"~BinFoodSecHH") ),design=gen)$p.value < 0.01,'< 0.01',
-                                                                round(svyttest( as.formula(paste0(these.b[i],"~BinFoodSecHH") ),design=gen)$p.value,digits=2))
+for ( i in 1:length( tt ) ){
+  final.tab[ which( str_detect( final.tab[ , 1 ], tt[i] ) ), 7 ] <- ifelse( svyttest( as.formula( paste0( these.b[i], "~BinFoodSecHH" ) ), design = gen )$p.value < 0.01, "< 0.01",
+                                                                round( svyttest( as.formula( paste0( these.b[i], "~BinFoodSecHH" ) ), design = gen )$p.value, digits = 2 ) )
   
 }
 
 # remove empty "( )" in table
-final.tab[final.tab=='  ( )']<-''
+final.tab[ final.tab == "  ( )" ] <- ""
 
 # save
 
-setwd( paste0(wd,"Manuscript/Tables") )
-write.table(final.tab,'table_1.txt', sep=",", row.names=FALSE)
+setwd( paste0( wd, "Manuscript/Tables" ) )
+write.table( final.tab, "table-1.txt", sep = ", ", row.names = FALSE )
 
 
 
@@ -101,117 +101,58 @@ write.table(final.tab,'table_1.txt', sep=",", row.names=FALSE)
 
 ## Group diet score by the median
 
-cnames<-c('FS_ENet','Age_ENet','FdAs_ENet','HHS_ENet','PC1','PC2')
+cnames <- c( "FS_ENet", "Age_ENet", "FdAs_ENet", "HHS_ENet", "PC1", "PC2" )
 
-(cut.names<-paste0(colnames(dat[,cnames]),'_Q2'))
+( cut.names <- paste0( colnames( dat[ , cnames ] ), "_Q2" ) )
 
-dat.b <-dat%>%
-  mutate(HHSize_bin=factor(ifelse(dat$HHSize>=5,'>=5',
-                                  ifelse(dat$HHSize<5 & is.na(dat$HHSize)==F,'<5',NA)))) %>%
-         filter(Diet.ext.ind.reg==1)
+dat.b  <- dat%>%
+  mutate( HHSize_bin = factor( ifelse( dat$HHSize>= 5, ">=5",
+                                  ifelse( dat$HHSize<5 & is.na( dat$HHSize ) == F, "<5", NA ) ) ) ) %>%
+         filter( Diet.ext.ind.reg == 1 )
 
-# generate variables that cut at median (use only data from subset we are working with and then merge back to larger dataset)
-for (i in 1:length(cnames)){
-  dat.b[,cut.names[i]]<-as.factor(quant_cut(var=cnames[i],df=dat.b,x=2))
+# generate variables that cut at median ( use only data from subset we are working with and then merge back to larger dataset )
+for ( i in 1:length( cnames ) ){
+  dat.b[ , cut.names[i]] <- as.factor( quant_cut( var = cnames[i], df = dat.b, x = 2 ) )
   
 }
 
 # join back with full data
-dat.c <- full_join( dat.b, dat )
+dat.c  <- full_join( dat.b, dat )
 
-# function to generate table
-table_3<-function(diet.index, design, df){
-  
-  low.des<-subset(design,design[['variables']][diet.index]=='1')
-  high.des<-subset(design,design[['variables']][diet.index]=='2')
-  both<-subset(design,is.na(design[['variables']][diet.index])==F)
-  
-  datadflow <- df[which(eval(parse(text=glue::glue("df${diet.index}")))=='1'),]
-  datadfhigh <- df[which(eval(parse(text=glue::glue("df${diet.index}")))=='2'),]
-  
-  nms <- c( "Age", "BMI", 'MET', "Calories", "CCI","Smoking", "Alcohol", "Gender", "Income", "Education", "Race",
-            "Years", "Site", "SNAP")
-  these <- c( "Age", "BMXBMI", 'WeekMetMin', "KCAL", "CCI_Score","SmokStat", "alc_cat", "Gender", "fipr", 
-                "Education_bin", "Race", "TimeCAFactor", "PrimaryCAGroup", "FoodAsstPnowic") 
-  
-  low <- list()
-  high <- list()
-  for (i in 1: length(nms)){
-    
-    if ( i %in% 1:5 ) {
-    low[[i]] <- epitab.means(cont.var=these[i],des=low.des,table.var = nms[i])
-    
-    high[[i]] <- agehigh<-epitab.means(cont.var=these[i], des=high.des,table.var = nms[i])
-    
-    high[[i]][1,2]<-ifelse(svyttest(formula(paste0(these[i], "~",diet.index)),design=both)$p.value<0.01,paste0(high[[i]][1,2],'**'),
-                         ifelse(svyttest(formula(paste0(these[i],"~",diet.index)),design=both)$p.value<0.05 & svyttest(formula(paste0(these[i], "~",diet.index)),design=both)$p.value>=0.01,paste0(high[[i]][1,2],'*'),high[[i]][1,2]))
-  
-    }  
-    
-    else if ( i %in% 6:length( these ) ) {
-      low[[i]]<-epitab(var= these[i],data.fr=datadflow, des=low.des,table.var=nms[i])
-      
-      high[[i]]<-epitab(var= these[i],data.fr=datadfhigh, des=high.des,table.var=nms[i])
-      
-      high[[i]][1,2]<-ifelse(svychisq(formula(paste0("~",these[i]," + ", diet.index)),design=both)$p.value<0.01,paste0(high[[i]][1,2],'**'),
-                              ifelse(svychisq(formula(paste0("~",these[i]," + ", diet.index)),design=both)$p.value<0.05 & svychisq(formula(paste0("~",these[i]," + ", diet.index)),design=both)$p.value>=0.01,paste0(high[[i]][1,2],'*'),high[[i]][1,2]))
-      
-    }
-    
-    }
-  
-m1<-str_extract(diet.index,'^.*(?=((\\_Q)|(\\_q)))')
-m2<-str_extract(diet.index,'^.*(?=((\\_Q)|(\\_q)))')
-
-# column bind
-rws <- list()
-for( i in 1:length( high ) ) {
-  rws[[i]] <- cbind( low[[i]], high[[i]]['mn'])
-  
-  colnames(rws[[i]]) <- c('Characteristic', paste0( m1,'_M1' ),paste0( m1,'_M2' ))
-  
-}
-
-# row bind
-table3 <- do.call( "rbind", rws )
-
-return( table3 )
-
-}
 
 # design
-t3 <- svydesign(id = ~SDMVPSU, weights = ~WTDR18YR, strata = ~SDMVSTRA, 
-                 nest = TRUE, survey.lonely.psu = "adjust", data = dat.c)
+t3  <- svydesign( id = ~SDMVPSU, weights = ~WTDR18YR, strata = ~SDMVSTRA, 
+                 nest = TRUE, survey.lonely.psu = "adjust", data = dat.c )
 
 
-
-tab3<-list()
-for (i in 1:length(cut.names)){
-tab3[[i]]<-table_3(cut.names[i], design=t3, df=dat.c)
+# use `table_3` function to generate table ( utils.R )
+tab3 <- list( )
+for ( i in 1:length( cut.names ) ){
+tab3[[i]] <- table_3( cut.names[i], design = t3, df = dat.c )
 }
 
-# clean-up aesthetically
-tab3df<-do.call('cbind',tab3)
-tab3df<-as.matrix(tab3df[,-c(4,7)])
-tab3df<-tab3df[,-c(8,11,14)]
+# clean-up table aesthetically
+tab3df <- do.call( "cbind", tab3 )
+tab3df <- as.matrix( tab3df[ , -c( 4, 7 ) ] )
+tab3df <- tab3df[ , -c( 8, 11, 14 ) ]
 
-tab3df[tab3df=='  ( )']<-''
-tab3df[tab3df=='  ( )*']<-'*'
-tab3df[tab3df=='  ( )**']<-'**'
+tab3df[ tab3df == "  ( )" ] <- ""
+tab3df[ tab3df == "  ( )*" ] <- "*"
+tab3df[ tab3df == "  ( )**" ] <- "**"
 
 # further text process
-tab3df<-data.frame(tab3df)
-tab3df<-sapply(tab3df,function(x) str_replace_all(x,'(?<=\\d\\d)(\\))','.0)'))
+tab3df <- data.frame( tab3df )
+tab3df <- sapply( tab3df, function(x) str_replace_all( x, "(?<=\\d\\d)(\\))",".0)" ))
 
 #quantify quantiles
-table(dat.b$PC1_Q)
-table(dat.b$PC2_Q)
-table(dat.b$FS_ENet_Q2)
-table(dat.b$Age_ENet_Q2)
-table(dat.b$FdAs_ENet_Q2)
-table(dat.b$HHS_ENet_Q2)
+table( dat.b$PC1_Q )
+table( dat.b$PC2_Q )
+table( dat.b$FS_ENet_Q2 )
+table( dat.b$Age_ENet_Q2 )
+table( dat.b$FdAs_ENet_Q2 )
+table( dat.b$HHS_ENet_Q2 )
 
 
-setwd(paste0(wd, "Manuscript/Tables"))
+setwd( paste0( wd, "Manuscript/Tables" ) )
 
-write.table(tab3df,'table-3.txt',sep=",",row.names=FALSE)
+write.table( tab3df, "table-3.txt", sep = ", ", row.names = FALSE )

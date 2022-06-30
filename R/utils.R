@@ -281,3 +281,133 @@ logit_splines <- function(df, x, y, knots, covariates, wts, referent='median'){
     coord_cartesian(ylim=c(0,max=(max(newdf$yhat)*3)))+
     labs(x=pattern.labels[i], y='Odds Ratio (Food Insecure)')
 }
+
+
+
+
+####################################################################################################
+################################# Table 1 (Categorical Variables) ##################################
+####################################################################################################
+
+
+epitab <- function(var,data.fr,des,table.var){
+  
+  attach(data.fr)
+  
+  typ<-paste0('~',var)
+  sumcat=0
+  for (i in 1:length(levels(factor(data.fr[[var]])))){
+    sumcat<-sumcat+((svytable(formula(typ),design=des)[i]))
+  }
+  
+  wtpct<-vector()
+  
+  for (i in 1:length(levels(factor(data.fr[[var]])))){
+    wtpct[i]<-round((svytable(formula(typ),design=des)[i]/sumcat*100),digits=1)
+  }
+  wtpct
+  wtpct<-c(' ',wtpct,' ')
+  total<-vector()
+  
+  for (i in 1:length(levels(factor(data.fr[[var]])))){
+    total[i]<-table(des[["variables"]][var])[i]
+  }
+  total<-c(' ',total,' ')
+  
+  levelnames<-c(table.var,levels(as.factor(data.fr[[var]])),' ')
+  levelnames<-levelnames[!is.na(levelnames)==T]
+  levelnames<-levelnames[!levelnames=='Missing/unknown']
+  merged<-data.frame(cbind(levelnames,paste0(total,' (',wtpct,')')))
+  
+  colnames(merged)<-c('levelnames','mn')
+  merged
+  detach(data.fr)
+  return(merged)
+  
+}
+
+
+
+####################################################################################################
+################################## Table 1 (Continuous Variables) ##################################
+####################################################################################################
+
+epitab.means <- function(cont.var, des, table.var){
+  
+  mn<-paste0(round(svymean(as.formula(paste0('~',cont.var)),design = des,na.rm=T)[1],digits=1),
+             ' (',round(sqrt(svyvar(as.formula(paste0('~',cont.var)),design = des,na.rm=T))[1],digits=1),')')
+  
+  ms2<-data.frame(c('',table.var,''),c('',mn,''))
+  
+  colnames(ms2)<-c('levelnames','mn')
+  
+  return(ms2)
+}
+
+
+
+
+####################################################################################################
+#################### Table 3 (Diet Indices by Epidemiologic Characteristics ) ######################
+####################################################################################################
+
+
+# function to generate table
+table_3<-function(diet.index, design, df){
+  
+  low.des<-subset(design,design[['variables']][diet.index]=='1')
+  high.des<-subset(design,design[['variables']][diet.index]=='2')
+  both<-subset(design,is.na(design[['variables']][diet.index])==F)
+  
+  datadflow <- df[which(eval(parse(text=glue::glue("df${diet.index}")))=='1'),]
+  datadfhigh <- df[which(eval(parse(text=glue::glue("df${diet.index}")))=='2'),]
+  
+  nms <- c( "Age", "BMI", 'MET', "Calories", "CCI","Smoking", "Alcohol", "Gender", "Income", "Education", "Race",
+            "Years", "Site", "SNAP")
+  these <- c( "Age", "BMXBMI", 'WeekMetMin', "KCAL", "CCI_Score","SmokStat", "alc_cat", "Gender", "fipr", 
+              "Education_bin", "Race", "TimeCAFactor", "PrimaryCAGroup", "FoodAsstPnowic") 
+  
+  low <- list()
+  high <- list()
+  for (i in 1: length(nms)){
+    
+    if ( i %in% 1:5 ) {
+      low[[i]] <- epitab.means(cont.var=these[i],des=low.des,table.var = nms[i])
+      
+      high[[i]] <- agehigh<-epitab.means(cont.var=these[i], des=high.des,table.var = nms[i])
+      
+      high[[i]][1,2]<-ifelse(svyttest(formula(paste0(these[i], "~",diet.index)),design=both)$p.value<0.01,paste0(high[[i]][1,2],'**'),
+                             ifelse(svyttest(formula(paste0(these[i],"~",diet.index)),design=both)$p.value<0.05 & svyttest(formula(paste0(these[i], "~",diet.index)),design=both)$p.value>=0.01,paste0(high[[i]][1,2],'*'),high[[i]][1,2]))
+      
+    }  
+    
+    else if ( i %in% 6:length( these ) ) {
+      low[[i]]<-epitab(var= these[i],data.fr=datadflow, des=low.des,table.var=nms[i])
+      
+      high[[i]]<-epitab(var= these[i],data.fr=datadfhigh, des=high.des,table.var=nms[i])
+      
+      high[[i]][1,2]<-ifelse(svychisq(formula(paste0("~",these[i]," + ", diet.index)),design=both)$p.value<0.01,paste0(high[[i]][1,2],'**'),
+                             ifelse(svychisq(formula(paste0("~",these[i]," + ", diet.index)),design=both)$p.value<0.05 & svychisq(formula(paste0("~",these[i]," + ", diet.index)),design=both)$p.value>=0.01,paste0(high[[i]][1,2],'*'),high[[i]][1,2]))
+      
+    }
+    
+  }
+  
+  m1<-str_extract(diet.index,'^.*(?=((\\_Q)|(\\_q)))')
+  m2<-str_extract(diet.index,'^.*(?=((\\_Q)|(\\_q)))')
+  
+  # column bind
+  rws <- list()
+  for( i in 1:length( high ) ) {
+    rws[[i]] <- cbind( low[[i]], high[[i]]['mn'])
+    
+    colnames(rws[[i]]) <- c('Characteristic', paste0( m1,'_M1' ),paste0( m1,'_M2' ))
+    
+  }
+  
+  # row bind
+  table3 <- do.call( "rbind", rws )
+  
+  return( table3 )
+  
+}
