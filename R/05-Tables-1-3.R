@@ -10,8 +10,11 @@ wd  <- "/Volumes/My Passport for Mac/Arthur Lab/FPED Raw Data/Analysis files/Git
 setwd( paste0( wd, "Data-Rodeo" ) )
 
 dat  <- readRDS( "04-Analytic-Data.rds" ) %>%
-  dplyr::filter( is.na( WTDR18YR ) == F ) # subset to those having non-missing weights 
+  dplyr::filter( is.na( WTDR18YR ) == F ) %>% # subset to those having non-missing weights 
+  dplyr::mutate( HHsize.bin = ifelse( HHSize >= 5, 1,
+                                     ifelse( HHSize < 5, 0, NA ) ) )# dichotomize household size column before generating table
 
+# designs
 nhc <- svydesign( id = ~SDMVPSU, weights = ~WTDR18YR, strata = ~SDMVSTRA, 
                nest = TRUE, survey.lonely.psu = "adjust", data = dat )
 
@@ -29,11 +32,12 @@ source( "utils.R" )
 # write function to return table 1
 
 cafs.table1 <- function( design, df ){
-gender <- epitab( var = "Gender", data.fr = df, des = design, table.var = "Gender" )
+sex <- epitab( var = "Gender", data.fr = df, des = design, table.var = "Gender" )
 alcuse <- epitab( var = "alc_cat", data.fr = df, des = design, table.var = "Alcohol Use" )
-races <- epitab( var = "Race", data.fr = df, des = design, table.var = "Race/Ethnicity" )
+race <- epitab( var = "Race", data.fr = df, des = design, table.var = "Race/Ethnicity" )
 smokstat <- epitab( var = "SmokStat", data.fr = df, des = design, table.var = "Smoking Status" )
 income <- epitab( var = "fipr", data.fr = df, des = design, table.var = "Income:Poverty" )
+hhsize <- epitab( var = "HHsize.bin", data.fr = df, des = design, table.var = "Household Size" )
 education <- epitab( var = "Education_bin", data.fr = df, des = design, table.var = "Education Attained" )
 bmi <- epitab.means( cont.var = "BMXBMI", des = design, table.var = "BMI" )
 metmins <- epitab.means( cont.var = "WeekMetMin", des = design, table.var = "MET Minutes" )
@@ -45,9 +49,11 @@ snap <- epitab( var = "FoodAsstPnowic", data.fr = df, des = design, table.var = 
 time <- epitab( var = "TimeCAFactor", data.fr = df, des = design, table.var = "Years Since Diagnosis" )
 
 
-table1 <- rbind( age, gender, races, education, income, bmi, metmins, calor, cci, snap, site, time, smokstat, alcuse )
+table1 <- rbind( age, sex, race, education, income, hhsize, bmi, metmins, calor, cci, snap, site, time, smokstat, alcuse )
 return( table1 )
 }
+
+
 
 # generate table columns for each of the subsets described above
 fiw.tab <- cafs.table1( design = fiw, df = dat )
@@ -61,9 +67,9 @@ final.tab <- cbind( gen.tab, fiw.tab, fsw.tab )
 ## add column for p value for t tests and chi square test ##
 
 # vector of strings containing elements that singal to a given row in the table
-chi  <- c( "Smoking", "Alcohol", "Gender", "Income", "Education", "Race",
+chi  <- c( "Smoking", "Alcohol", "Gender", "Income", "Size", "Education", "Race",
           "Years", "Site", "SNAP" )
-these  <- c( "SmokStat", "alc_cat", "Gender", "fipr", "Education_bin",
+these  <- c( "SmokStat", "alc_cat", "Gender", "fipr", "HHsize.bin", "Education_bin",
             "Race", "TimeCAFactor", "PrimaryCAGroup", "FoodAsstPnowic" )
 
 # chi square
@@ -74,8 +80,8 @@ for ( i in 1:length( chi ) ){
   
 }
 
-tt  <- c( "Age", "BMI", "MET", "Calories", "CCI" )
-these.b  <- c( "Age", "BMXBMI", "WeekMetMin", "KCAL", "CCI_Score" ) 
+tt  <- c( "Age", "BMI", "HHSize", "MET", "Calories", "CCI" )
+these.b  <- c( "Age", "BMXBMI", "HHSize", "WeekMetMin", "KCAL", "CCI_Score" ) 
 
 # t test
 for ( i in 1:length( tt ) ){
@@ -106,8 +112,6 @@ cnames <- c( "FS_ENet", "Age_ENet", "FdAs_ENet", "HHS_ENet", "PC1", "PC2" )
 ( cut.names <- paste0( colnames( dat[ , cnames ] ), "_Q2" ) )
 
 dat.b  <- dat%>%
-  mutate( HHSize_bin = factor( ifelse( dat$HHSize>= 5, ">=5",
-                                  ifelse( dat$HHSize<5 & is.na( dat$HHSize ) == F, "<5", NA ) ) ) ) %>%
          filter( Diet.ext.ind.reg == 1 )
 
 # generate variables that cut at median ( use only data from subset we are working with and then merge back to larger dataset )

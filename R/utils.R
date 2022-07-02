@@ -371,9 +371,9 @@ table_3<-function(diet.index, design, df){
   datadflow <- df[which(eval(parse(text=glue::glue("df${diet.index}")))=='1'),]
   datadfhigh <- df[which(eval(parse(text=glue::glue("df${diet.index}")))=='2'),]
   
-  nms <- c( "Age", "BMI", 'MET', "Calories", "CCI","Smoking", "Alcohol", "Gender", "Income", "Education", "Race",
+  nms <- c( "Age", "BMI", 'MET', "Calories", "CCI","Smoking", "Alcohol", "Gender", "HHSize","Income", "Education", "Race",
             "Years", "Site", "SNAP")
-  these <- c( "Age", "BMXBMI", 'WeekMetMin', "KCAL", "CCI_Score","SmokStat", "alc_cat", "Gender", "fipr", 
+  these <- c( "Age", "BMXBMI", 'WeekMetMin', "KCAL", "CCI_Score","SmokStat", "alc_cat", "Gender", "HHsize.bin", "fipr", 
               "Education_bin", "Race", "TimeCAFactor", "PrimaryCAGroup", "FoodAsstPnowic") 
   
   low <- list()

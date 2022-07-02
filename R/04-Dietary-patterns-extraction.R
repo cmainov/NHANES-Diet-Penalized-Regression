@@ -3,10 +3,10 @@
 ###---------------------------------------------------
 
 library( tidyverse )
-library( survey )
-library( glmnet )
-library( caret )
-library( jtools )
+library( survey ) # complex survey design models
+library( glmnet ) # fit penalized regression
+library( caret ) # control tuning parameters in penalized regression
+library( jtools ) # svycor function
 library( weights )
 library( latex2exp) # to add LaTeX to plots
 
@@ -364,10 +364,11 @@ cordat2 <- left_join( x.data3[ , -fdgrp.columns ], cordata[ , c( 1, fdgrp.column
 
 # subset since svy procedures require all rows in data
 # to have weights and no missing weights
-mod.data <- cordat2[ !is.na( cordat2$WTDR18YR ) == T, ]
-mod1 <- svydesign( id = ~SDMVPSU, weights = ~WTDR18YR, strata = ~SDMVSTRA, 
-                nest = TRUE, survey.lonely.psu = "adjust", data = mod.data )
-mod1 <- subset( mod1, Diet.ext.ind.reg == 1 )# inclusions
+mod1 <- cordat2 %>%
+  filter( is.na( WTDR18YR ) == F) %>%
+  svydesign( id = ~SDMVPSU, weights = ~WTDR18YR, strata = ~SDMVSTRA, 
+                nest = TRUE, survey.lonely.psu = "adjust", data = . ) %>%
+  subset( ., Diet.ext.ind.reg == 1 )# inclusions
 
 
 
