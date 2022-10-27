@@ -1371,7 +1371,7 @@ left_join( demoall, mcqall.bcd[ ,-which( colnames( mcqall.bcd ) == 'RIDAGEYR' ) 
   left_join( ., nutrall, by = "SEQN" ) %>%
   left_join( ., cci_dat, by = "SEQN" ) %>%
   left_join( ., mergall.pa, by = "SEQN" ) %>%
-  left_join( ., readRDS( '01-FPED-Wrangled.rds' ), by = 'SEQN' ) %>%
+  left_join( ., readRDS( 'Data-Wrangled/01-FPED-Wrangled.rds' ), by = 'SEQN' ) %>%
   # Create 18yr and 16yr weights using 2 days of dietary data ( WTDR2D weights )
   mutate( WTDR18YR = ifelse( Cycle %in% c( 1, 2 ), ( 2/10 ) * WTDR4YR,  # 1999-2017
                              ifelse( Cycle %in% c( 3:10 ), ( 8/10 ) * WTDR2D, NA ) ),
@@ -1395,6 +1395,6 @@ left_join( demoall, mcqall.bcd[ ,-which( colnames( mcqall.bcd ) == 'RIDAGEYR' ) 
                           0 ) ) ) %>%
   # sort rows by age
    arrange( Age ) %>%
-  saveRDS( ., '02-Covariates-Wrangled.rds' )
+  saveRDS( ., 'Data-Wrangled/02-Covariates-Wrangled.rds' )
 
           

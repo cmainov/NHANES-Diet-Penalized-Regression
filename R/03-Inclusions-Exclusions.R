@@ -4,9 +4,7 @@
 
 library( tidyverse )
 
-setwd( '/Volumes/My Passport for Mac/Arthur Lab/FPED Raw Data/Analysis files/GitHub Repository Files /NHANES-Diet-Penalized-Regression/Data-Wrangled' )
-
-start.data <- readRDS( '02-Covariates-Wrangled.rds' )
+start.data <- readRDS( 'Data-Wrangled/02-Covariates-Wrangled.rds' )
 
 ####################################################################################################
 nrow( start.data ) ######### start: 101316 observations ##############################################
@@ -126,4 +124,4 @@ step3.data %>%
 start.data %>%
   filter( is.na( WTDR18YR ) == F ) %>%
   full_join( ., step3.data ) %>%
-  saveRDS( ., '03-Inclusions-Exclusions.rds' )
+  saveRDS( ., 'Data-Wrangled/03-Inclusions-Exclusions.rds' )

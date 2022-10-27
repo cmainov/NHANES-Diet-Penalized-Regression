@@ -6,18 +6,11 @@ library( tidyverse )
 library( survey )
 library( ggpubr )
 
-
-wd <- "/Volumes/My Passport for Mac/Arthur Lab/FPED Raw Data/Analysis files/GitHub Repository Files /NHANES-Diet-Penalized-Regression/"
-
-setwd( paste0( wd, "Data-Rodeo" )  )
-       
-dat <- readRDS( "04-Analytic-Data.rds" ) %>%
+dat <- readRDS( "Data-Rodeo/04-Analytic-Data.rds" ) %>%
   dplyr::filter( is.na( WTDR18YR ) == F )
 
 # Import result-generating functions
-setwd( paste0( wd, "R" )  )
-
-source( 'utils.R' ) 
+source( "R/utils.R" ) 
 
 # covariates to adjust for in model
 covars.logit <- c( 'Race_binary', 'Gender', 'Age', 'KCAL', 'BMXBMI', 'HHSize', 'FoodAsstPnowic',
@@ -25,14 +18,13 @@ covars.logit <- c( 'Race_binary', 'Gender', 'Age', 'KCAL', 'BMXBMI', 'HHSize', '
                 'PrimaryCAGroup', 'CCI_Score' )
 
 ## tabulate results using function and save table ##
-setwd( paste0( wd, "Manuscript/Tables" )  )
 
 m <- results_function( df = dat,
                  covariates = covars.logit, y = 'BinFoodSecHH',
                  variables = c( 'FS_ENet', 'Age_ENet', 'FdAs_ENet', 'HHS_ENet', 'PC1', 'PC2' ) ,
                  cuts = 5,
                  subset.condition = 'Diet.ext.ind.reg == 1 & Gender == "Female"' )  %>%
-  write.table( ., 'logit-results.txt', sep = ", ", row.names = FALSE ) 
+  write.table( ., "Manuscript/Tables/logit-results.txt", sep = ", ", row.names = FALSE ) 
 
 
 ## stratified models ##
@@ -76,10 +68,9 @@ for ( i in 1:length( this.e )  ){
   
 }
 
-setwd( paste0( wd, "Manuscript/Tables" )  )
 
 rbind( out.s, out.t, out.e ) %>%
-  write.table( ., 'stratified-results.txt', sep = ", ", row.names = FALSE ) 
+  write.table( ., "Manuscript/Tables/stratified-results.txt", sep = ", ", row.names = FALSE ) 
 
 
 
@@ -121,8 +112,7 @@ for ( i in 1:length( patterns )  ) {
 
 do.call( "ggarrange", p ) 
 
-#Save
-setwd( paste0( wd, "Manuscript/Figures" )  )
-ggsave( "logit-splines.jpeg", width = 30, height = 20, units = "cm" ) 
+# save
+ggsave( "Manuscript/Figures/logit-splines.jpeg", width = 30, height = 20, units = "cm" ) 
 
 

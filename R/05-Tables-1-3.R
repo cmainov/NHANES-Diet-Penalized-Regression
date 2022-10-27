@@ -6,10 +6,7 @@ library( tidyverse )
 library( survey )
 
 
-wd  <- "/Volumes/My Passport for Mac/Arthur Lab/FPED Raw Data/Analysis files/GitHub Repository Files /NHANES-Diet-Penalized-Regression/"
-setwd( paste0( wd, "Data-Rodeo" ) )
-
-dat  <- readRDS( "04-Analytic-Data.rds" ) %>%
+dat  <- readRDS( "Data-Rodeo/04-Analytic-Data.rds" ) %>%
   dplyr::filter( is.na( WTDR18YR ) == F ) %>% # subset to those having non-missing weights 
   dplyr::mutate( HHsize.bin = ifelse( HHSize >= 5, 1,
                                      ifelse( HHSize < 5, 0, NA ) ) )# dichotomize household size column before generating table
@@ -25,9 +22,7 @@ fsw <- subset( nhc, BinFoodSecHH == "High" & Diet.ext.ind.reg == 1 )
 gen <- subset( nhc, Diet.ext.ind.reg == 1 )
 
 # read in helper functions
-
-setwd( paste0( wd, "R" ) )
-source( "utils.R" )
+source( "R/utils.R" )
 
 # write function to return table 1
 
@@ -94,9 +89,7 @@ for ( i in 1:length( tt ) ){
 final.tab[ final.tab == "  ( )" ] <- ""
 
 # save
-
-setwd( paste0( wd, "Manuscript/Tables" ) )
-write.table( final.tab, "table-1.txt", sep = ", ", row.names = FALSE )
+write.table( final.tab, "Manuscript/Tables/table-1.txt", sep = ", ", row.names = FALSE )
 
 
 
@@ -148,7 +141,7 @@ tab3df[ tab3df == "  ( )**" ] <- "**"
 tab3df <- data.frame( tab3df )
 tab3df <- sapply( tab3df, function(x) str_replace_all( x, "(?<=\\d\\d)(\\))",".0)" ))
 
-#quantify quantiles
+# quantify quantiles
 table( dat.b$PC1_Q )
 table( dat.b$PC2_Q )
 table( dat.b$FS_ENet_Q2 )
@@ -156,7 +149,5 @@ table( dat.b$Age_ENet_Q2 )
 table( dat.b$FdAs_ENet_Q2 )
 table( dat.b$HHS_ENet_Q2 )
 
-
-setwd( paste0( wd, "Manuscript/Tables" ) )
-
-write.table( tab3df, "table-3.txt", sep = ", ", row.names = FALSE )
+# save table
+write.table( tab3df, "Manuscript/Tables/table-3.txt", sep = ", ", row.names = FALSE )

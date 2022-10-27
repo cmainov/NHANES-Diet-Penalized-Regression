@@ -10,9 +10,8 @@ library( jtools ) # svycor function
 library( weights )
 library( latex2exp) # to add LaTeX to plots
 
-setwd( "/Volumes/My Passport for Mac/Arthur Lab/FPED Raw Data/Analysis files/GitHub Repository Files /NHANES-Diet-Penalized-Regression/Data-Wrangled" )
 
-xdata <- readRDS( "03-Inclusions-Exclusions.rds" )
+xdata <- readRDS( "Data-Wrangled/03-Inclusions-Exclusions.rds" )
 
 
 # collapse red mt and organ mt to same group give very low intake of organ mts
@@ -163,8 +162,7 @@ for ( j in fdgrp.columns ){# ensure proper variables are indicated by the column
 ##############################################################################
 
 # Save plot figure
-setwd( "/Volumes/My Passport for Mac/Arthur Lab/FPED Raw Data/Analysis files/GitHub Repository Files /NHANES-Diet-Penalized-Regression/Manuscript/Figures" )
-pdf( "optimal-lambdas-enet-patterns.pdf" )
+pdf( "Manuscript/Figures/optimal-lambdas-enet-patterns.pdf" )
 
 # Food insecurity binary outcome
 par( mfrow = c( 2, 2 ), mar = c( 3, 3, 2, 1 ) )
@@ -248,8 +246,7 @@ cfenet <- round( data.frame( fs = fsoc$coefs,
                          hhs = hhssoc$coefs ), digits = 2 )
 
 
-setwd( "/Volumes/My Passport for Mac/Arthur Lab/FPED Raw Data/Analysis files/GitHub Repository Files /NHANES-Diet-Penalized-Regression/Manuscript/Tables" )
-write.table( cfenet, "Enet-factor-loadings.txt", sep =", ", row.names = FALSE )
+write.table( cfenet, "Manuscript/Tables/Enet-factor-loadings.txt", sep =", ", row.names = FALSE )
 
 
 
@@ -320,11 +317,9 @@ d$PC2 <- t( coefspc[ , 2 ] %*% t( xmatrix ) )
 
 ## Add to original data and save
 
-setwd( "/Volumes/My Passport for Mac/Arthur Lab/FPED Raw Data/Analysis files/GitHub Repository Files /NHANES-Diet-Penalized-Regression/Data-Rodeo" )
-
 ( x.data3 <- left_join( xdata, d[ , c( "SEQN", "FS_ENet", "Age_ENet",
                                       "FdAs_ENet", "HHS_ENet", "PC1", "PC2" ) ] ) ) %>%
-  saveRDS( ., "04-Analytic-Data.rds" )
+  saveRDS( ., "Data-Rodeo/04-Analytic-Data.rds" )
 
 
 
@@ -423,6 +418,5 @@ for ( i in 1:ncol( corr.matrix.b ) ){
 # Replace NA"s with "--"
 corr.matrix.b[ corr.matrix.b ==" NA" ] <- "--"
 
-setwd( "/Volumes/My Passport for Mac/Arthur Lab/FPED Raw Data/Analysis files/GitHub Repository Files /NHANES-Diet-Penalized-Regression/Manuscript/Tables" )
-write.table( corr.matrix.b, "corr-matrix.txt", sep =",", row.names = FALSE )
+write.table( corr.matrix.b, "Manuscript/Tables/corr-matrix.txt", sep =",", row.names = FALSE )
 

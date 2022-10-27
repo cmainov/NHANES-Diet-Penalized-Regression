@@ -9,14 +9,14 @@ library( tidyverse )
 library( RNHANES ) 
 library( glue )
 
-setwd( '/Volumes/My Passport for Mac/Arthur Lab/FPED Raw Data/Analysis files/GitHub Repository Files /NHANES-Diet-Penalized-Regression/Data-Raw/FPED' ) 
+setwd( "Data-Raw/FPED" ) 
 
 ####### CYCLES 1999-2002 (MPED 1.0)##########
 
-dr99 <- read_sas( 'pyr_tot01.sas7bdat' ) 
+dr99 <- read_sas( "Data-Raw/pyr_tot01.sas7bdat" ) 
 names( dr99 ) 
 
-#1999-2002 has only 1 day of dietary interview ( 1 24 hr recall )  whereas 2003-2017 has 2 days
+# 1999-2002 has only 1 day of dietary interview ( 1 24 hr recall )  whereas 2003-2017 has 2 days
 foodgrpshr9902 <- dr99 %>%
   mutate( ProcessedMts =  M_FRANK,
    RedMts =  M_MEAT,
@@ -55,8 +55,8 @@ names( foodgrpshr9902 )
 
 ####### CYCLE 2003-2004 (MPED 2.0) ##########
 
-dr10304 <- read_sas( 'pyr_tot_d1.sas7bdat' ) 
-dr20304 <- read_sas( 'pyr_tot_d2.sas7bdat' ) 
+dr10304 <- read_sas( 'Data-Raw/pyr_tot_d1.sas7bdat' ) 
+dr20304 <- read_sas( 'Data-Raw/pyr_tot_d2.sas7bdat' ) 
 mergedde0304 <- inner_join( dr10304, dr20304, by='SEQN' ) 
 names( mergedde0304 ) 
 
@@ -154,8 +154,8 @@ import_fped <- function( yrs.cycle ) {
   
   import::from('magrittr','%>%')
   
-  dr1 <- haven::read_sas( glue::glue( 'fped_dr1tot_{yrs.cycle}.sas7bdat' ) )
-  dr2 <- haven::read_sas( glue::glue( 'fped_dr2tot_{yrs.cycle}.sas7bdat' ) )
+  dr1 <- haven::read_sas( glue::glue( 'Data-Raw/fped_dr1tot_{yrs.cycle}.sas7bdat' ) )
+  dr2 <- haven::read_sas( glue::glue( 'Data-Raw/fped_dr2tot_{yrs.cycle}.sas7bdat' ) )
   keep.dr1 <- c( 1, which( stringr::str_detect( colnames( dr1 ), 'DR1T_' ) ) ) # keep intake columns and SEQN
   keep.dr2 <- c( 1, which( stringr::str_detect( colnames( dr2 ), 'DR2T_' ) ) )
   
@@ -250,7 +250,7 @@ import_fped <- function( yrs.cycle ) {
             Yogurt, Cheese, Alcohol, FruitOther, F_CitMelBer, Tomatoes, GreenLeafy, DarkYlVeg, OtherVeg,
             Potatoes, OtherStarchyVeg, Legumes, Soy, RefinedGrain, WholeGrain, Nuts, AddedSugars ) 
   
-  return( merged.dr) 
+  return( merged.dr ) 
 }
 
 # apply function to return list of wrangled datasets
@@ -310,16 +310,14 @@ intweights <- intweights %>%
   mutate( WTMEC18YR = ifelse( SDDSRVYR %in% c( 1,2 ) ,( 2 / 10 ) * WTMEC4YR,
                           ifelse( SDDSRVYR %in% c( 3,4,5,6,7,8,9,10 ) ,WTMEC2YR / 10,NA )  )  ) 
      
-# join final datasets and save
-
-setwd( '/Volumes/My Passport for Mac/Arthur Lab/FPED Raw Data/Analysis files/GitHub Repository Files /NHANES-Diet-Penalized-Regression/Data-Wrangled' )
+## join final datasets and save ##
 
 # join
 finalmerge.b <- left_join( finalmerge, 
                           intweights[ , c( 'SEQN', 'WTINT18YR' , 'WTMEC18YR' ) ], 
                           by = 'SEQN' )
 
-saveRDS( finalmerge.b, '01-FPED-Wrangled.rds' ) # save
+saveRDS( finalmerge.b, 'Data-Wrangled/01-FPED-Wrangled.rds' ) # save
 
 nrow( finalmerge.b ) # final merge file has 92121 rows
 finalmerge.c <- na.omit( finalmerge.b ) 
