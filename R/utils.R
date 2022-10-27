@@ -63,7 +63,6 @@ results_function<-function(df, covariates, variables, y, cuts, subset.condition=
   
   start_time <- Sys.time( )# document start times
   
-  import::from(magrittr, '%>%')
 
   
   # index names and naming index quantile variables to be introduced into data
@@ -276,7 +275,7 @@ logit_splines <- function(df, x, y, knots, covariates, wts, referent='median', x
   newdf$all<-'Referent (OR=1)'
   newdf$ci<-'95% Confidence Bounds'
   
-  ggplot2::ggplot(data=newdf,mapping=aes(x=x,y=yhat))+
+  sp.plot <- ggplot2::ggplot(data=newdf,mapping=aes(x=x,y=yhat))+
     geom_line(size=0.8)+
     geom_ribbon(aes(ymin=lower, ymax=upper,col=ci,fill=ci), alpha=0.2)+
     theme_classic()+
@@ -289,6 +288,8 @@ logit_splines <- function(df, x, y, knots, covariates, wts, referent='median', x
           legend.text = element_text(size=8))+
     coord_cartesian(ylim=c(0,max=(max(newdf$yhat)*3)))+
     labs( x=xlab, y=ylab )
+  
+  return( sp.plot )
 }
 
 

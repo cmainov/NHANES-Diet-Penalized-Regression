@@ -6,7 +6,7 @@ library( tidyverse )
 library( survey )
 
 
-dat  <- readRDS( "Data-Rodeo/04-Analytic-Data.rds" ) %>%
+dat  <- readRDS( "03-Data-Rodeo/04-Analytic-Data.rds" ) %>%
   dplyr::filter( is.na( WTDR18YR ) == F ) %>% # subset to those having non-missing weights 
   dplyr::mutate( HHsize.bin = ifelse( HHSize >= 5, 1,
                                      ifelse( HHSize < 5, 0, NA ) ) )# dichotomize household size column before generating table
@@ -89,7 +89,7 @@ for ( i in 1:length( tt ) ){
 final.tab[ final.tab == "  ( )" ] <- ""
 
 # save
-write.table( final.tab, "Manuscript/Tables/table-1.txt", sep = ", ", row.names = FALSE )
+write.table( final.tab, "04-Manuscript/Tables/table-1.txt", sep = ", ", row.names = FALSE )
 
 
 

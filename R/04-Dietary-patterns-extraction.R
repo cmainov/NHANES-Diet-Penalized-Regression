@@ -7,20 +7,22 @@
 # In this script, we will extract dietary patterns using penalized logistic regression and then principal components
 # analysis.
 # 
-# INPUT DATA FILE: "Data-Wrangled/03-Inclusions-Exclusions.rds" 
+# INPUT DATA FILE: "02-Data-Wrangled/03-Inclusions-Exclusions.rds" 
 #
-# OUTPUT FILES: "02-Data-Wrangled/03-Inclusions-Exclusions.rds" 
+# OUTPUT FILES: "03-Data-Rodeo/04-Analytic-Data.rds", "04-Manuscript/Tables/corr-matrix.txt",
+# "optimal-lambdas-enet-patterns-v2.PNG", "04-Manuscript/Tables/Enet-factor-loadings.txt",
+# "04-Manuscript/Tables/PCA-Factorloadings.txt"
 #
 # Resources: 
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
 library( tidyverse )
 library( survey ) # complex survey design models
-library( glmnet ) # fit penalized regression
+library( glmnet ) # fit penalized regression models
 library( caret ) # control tuning parameters in penalized regression
 library( jtools ) # svycor function
 library( weights )
-library( latex2exp) # to add LaTeX to plots
+library( latex2exp ) # to add LaTeX to plots
 
 
 xdata <- readRDS( "02-Data-Wrangled/03-Inclusions-Exclusions.rds" )
@@ -33,11 +35,13 @@ xdata$Meat <- xdata$RedMts + xdata$OrganMts
 x.data <- xdata
 
 
-### Dietary Patterns Extraction: Elastic Net ###
+### Dietary Patterns Extraction: Penalized Logistic Regression ###
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-# function
+# function for extracting patterns with penalized logit
+
+## START FUNCTION ##
 enet_pat <- function( xmat, yvec, wts, plot.title ){
 
   colorss <- c( "black", "red", "green3", "navyblue",   "cyan",   "magenta", "gold", "gray",
@@ -74,7 +78,7 @@ enet_pat <- function( xmat, yvec, wts, plot.title ){
       
     store[[ i ]] <- resdf
     
-    ###### generate plot ###### 
+    ## generate plot ##
     
     if ( i == 1 ){ # for the first value of 'i'
       plot( x = enetr$lambda, y = enetr$cvm, type ='l', 
@@ -90,7 +94,7 @@ enet_pat <- function( xmat, yvec, wts, plot.title ){
     }
   }
   
-  ###### superimpose intersecting lines at the minimizer ###### 
+  ## superimpose intersecting lines at the minimizer ## 
    cverr <- do.call( 'rbind', store ) # this gives the table of errors for each combination of alpha and lambda
   abline( h = cverr[ which( cverr$av.error == min( cverr$av.error ) ), 'av.error' ],
          lty = 2 )
@@ -98,8 +102,9 @@ enet_pat <- function( xmat, yvec, wts, plot.title ){
          lty = 2 )
   
   
-  ###### add optimal lambda and alpha values to plot title ###### 
+  ## add optimal lambda and alpha values to plot title ## 
   optimall <- cverr[ which( cverr$av.error == min( cverr$av.error ) ), ] # here I extract the optimal combination of
+  
   # lambda and alpha
   optlam <- signif( optimall[ 2 ], 2 )
   opta <- optimall[ 1 ]
@@ -116,11 +121,11 @@ enet_pat <- function( xmat, yvec, wts, plot.title ){
   # correspond to that combination of parameters
   return( list( optimall, coefs = as.matrix( coefsdt[[ which( alpha.grid == optimall$alpha ) ]]$coefs )[ -1, ] ) )
 }
-#### END FUNCTION #####
+## END FUNCTION ##
 
 
 
-## Subset Data for Elastic Net Procedure ##
+## Subset Data for Penalized Logit Procedure ##
 caonly <- x.data[ which( x.data$Diet.ext.ind.reg == 1 ), ]
 
 # set categories to numerical dummy variables for glmnet model
@@ -155,7 +160,8 @@ kcal.column <- which( colnames( caonly ) =='KCAL' )
 seqn.column <- which( colnames( caonly ) =='SEQN' )
 
 
-### ADJUSTMENT FOR TOTAL ENERGY INTAKE PRIOR TO EXTRACTION ###
+## Adjustment for Total Energy Intake ##
+
 # divide by total energy intake for multivariate density approach to energy adjustment
 for ( j in fdgrp.columns ){# ensure proper variables are indicated by the column index in this line of code before proceeding
   caonly[ , j ] <- caonly[ , j ] / caonly[ , kcal.column ]
@@ -219,10 +225,13 @@ hhssoc <- enet_pat( xmat, yvec, xwts, plot.title ='Household Size' )
 
 # save plot
 dev.off( )
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
 
-#################### Generate Pattern Scores in the Data #################### 
+
+### Generate Pattern Scores in the Data ###
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
 # generate scores on data
 xmatrix <- as.matrix( x.data[ which( x.data$Diet.ext.ind.reg == 1 ), c( fdgrp.columns, kcal.column ) ] ) # subset as a matrix
@@ -242,7 +251,7 @@ for ( i in 1:ncol( xmatrix ) ){
 }
 
 
-
+# matrix multiplication
 d$FS_ENet <- t( fsoc$coefs %*% t( xmatrix ) )
 d$Age_ENet <- t( ageoc$coefs %*% t( xmatrix ) )
 d$FdAs_ENet <- t( fdasoc$coefs %*% t( xmatrix ) )
@@ -251,22 +260,21 @@ d$HHS_ENet <- t( hhssoc$coefs %*% t( xmatrix ) )
 
 
 # Save loading matrices
-
 cfenet <- round( data.frame( fs = fsoc$coefs,
                          age = ageoc$coefs,
                          fdas = fdasoc$coefs,
                          hhs = hhssoc$coefs ), digits = 2 )
 
 
-write.table( cfenet, "Manuscript/Tables/Enet-factor-loadings.txt", sep =", ", row.names = FALSE )
+write.table( cfenet, "04-Manuscript/Tables/Enet-factor-loadings.txt", sep =", ", row.names = FALSE )
+
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
 
 
-##############################################################################
-######################## Patterns Extraction with PCA ########################
-##############################################################################
-
+### Patterns Extraction with PCA ###
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
 # ensure all rows have a sample weight present before using `survey` functions
 pca.data <- x.data[ !is.na( x.data$WTDR18YR ) == T, ] 
@@ -303,12 +311,12 @@ abline( h = 1, lty = 2 )
 coefspc <- pcaobj$rotation
 
 # save raw loading matrix
-write.table( round( coefspc[ , 1:2 ], digits = 2 ), "PCA-Factorloadings.txt", sep =", ", row.names = FALSE )
+write.table( round( coefspc[ , 1:2 ], digits = 2 ), "04-Manuscript/Tables/PCA-Factorloadings.txt", sep =", ", row.names = FALSE )
 
 
 sum( pcaobj$sdev[ 1:2 ] / sum( pcaobj$sdev ) ) # percent of variation accounted for by first two components ( 0.1412 )
 
-# Generate Scores
+# generate scores
 xmatrix <- as.matrix( x.data[ which( x.data$Diet.ext.ind.reg == 1 ), c( fdgrp.columns, kcal.column ) ] )
 
 # divide fd grps by kcal
@@ -324,21 +332,28 @@ for ( i in 1:ncol( xmatrix ) ){
   xmatrix[ , i ] <- ( xmatrix[ , i ] - mean( xmatrix[ , i ], na.rm = T ) ) / sd( xmatrix[ , i ], na.rm = T )
 }
 
+# generate scores using matrix multiplication
 d$PC1 <- t( coefspc[ , 1 ] %*% t( xmatrix ) )
 d$PC2 <- t( coefspc[ , 2 ] %*% t( xmatrix ) )
 
-## Add to original data and save
+# add to original data and save
 
 ( x.data3 <- left_join( xdata, d[ , c( "SEQN", "FS_ENet", "Age_ENet",
                                       "FdAs_ENet", "HHS_ENet", "PC1", "PC2" ) ] ) ) %>%
-  saveRDS( ., "Data-Rodeo/04-Analytic-Data.rds" )
+  
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------
+
+### Save Analytic Data ###
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------
+  saveRDS( ., "03-Data-Rodeo/04-Analytic-Data.rds" )
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
 
-##############################################################################
-################## Pearson Correlation Matrix (Table 3) PCA ##################
-##############################################################################
 
+
+### Pearson Correlation Matrix (Table 2) PCA ###
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
 # subset individuals meeting criteria
 cordata <- x.data3[ which( x.data3$Diet.ext.ind.reg == 1 ), ]
@@ -355,7 +370,8 @@ fdgrp.columns <- which( colnames( cordata ) %in% c( "ProcessedMts", "Meat", "Pou
 
 fdgrp.columns <- fdgrp.columns[ c( 1, 26, 2:25 ) ] # re-arrange so that Meat column index is second column index
 
-### ADJUSTMENT FOR TOTAL ENERGY ###
+## Adjustment for Total Energy Intake ##
+
 # divide by total energy intake for multivariate density approach to energy adjustment
 for ( j in fdgrp.columns ){# ensure proper variables are indicated by the column index in this line of code before proceeding
   cordata[ , j ] <- cordata[ , j ] / cordata[ , kcal.column ]
@@ -392,9 +408,9 @@ fdgrp.diet.names <- c( "ProcessedMts", "Meat", "Poultry", "Fish_Hi", "Fish_Lo",
 diet.patt.names <- c( "FS_ENet", "Age_ENet",
                    "FdAs_ENet", "HHS_ENet", "PC1", "PC2" )
 
-## Loop to generate correlation matrix using svycor function
+## Loop to generate correlation matrix using svycor function ##
 
-# Correlation Coefficients
+# initialize matrix
 corr.matrix <- matrix( NA, ncol = length( diet.patt.names ), nrow = length( fdgrp.diet.names ) )
 
 for ( g in 1:length( diet.patt.names ) ){
@@ -402,33 +418,39 @@ for ( g in 1:length( diet.patt.names ) ){
   loadings.vector <- vector( )
 
 for ( i in 1:length( fdgrp.diet.names ) ){
+  
   loadings.vector[ i ] <- round( svycor( as.formula( paste0( "~", fdgrp.diet.names[ i ], "+", diet.patt.names[ g ] ) ), design = mod1 )$cors[ 2 ], digits = 2 )
+
 }
+  
 corr.matrix[ , g ] <- loadings.vector
+
 }
 
 
-## Text process correlation matrix
-# Assign column names and rownames to matrix
+## text-process correlation matrix ##
+
+# assign column names and rownames to matrix
 
 colnames( corr.matrix ) <- diet.patt.names
 rownames( corr.matrix ) <- fdgrp.diet.names
 
-# Significant digits and trailing zeros:
+# fix significant digits and trailing zeros:
 corr.matrix.b <- print( formatC( corr.matrix, digits = 2, format ="fg", flag ="#" ) )
 
-# Replace instances of "0" with "0.00"
+# replace instances of "0" with "0.00"
 corr.matrix.b[ corr.matrix.b =="0" ] <- "0.00"
 
-# Eliminate excess trailing zeros
+# eliminate excess trailing zeros
 for ( i in 1:ncol( corr.matrix.b ) ){
   
   corr.matrix.b[ , i ] <- str_replace( corr.matrix.b[ , i ], "( ?<=\\.\\d\\d )0", "" )
   
 }
 
-# Replace NA"s with "--"
+# replace NA"s with "--"
 corr.matrix.b[ corr.matrix.b ==" NA" ] <- "--"
 
-write.table( corr.matrix.b, "Manuscript/Tables/corr-matrix.txt", sep =",", row.names = FALSE )
+# save table
+write.table( corr.matrix.b, "04-Manuscript/Tables/corr-matrix.txt", sep =",", row.names = FALSE )
 

@@ -2,17 +2,38 @@
 ###   06-VALIDATION: BINARY LOGISTIC REGRESSION
 ###---------------------------------------------------
 
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------
+# 
+# In this script, we will fit validation models using the diet pattern scores generated in the previous script. These will
+# be logistic regression models with food insecurity as the response variable and the diet scores alongside the covariates
+# as the predictors. We will also fit these models stratified on certain participant characteristics and then fit models
+# with restricted cubic splines to generate some plots.
+# 
+# INPUT DATA FILE: "03-Data-Rodeo/04-Analytic-Data.rds"
+#
+# OUTPUT FILES: "04-Manuscript/Tables/logit-results.txt", "04-Manuscript/Figures/logit-splines.jpeg",
+# "04-Manuscript/Tables/stratified-results.txt"
+#
+# Resources: see "utils.R" for functions used to generate results.
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------
+
 library( tidyverse )
 library( survey )
 library( ggpubr )
+library( rms )
+library( GenKern )
 
-dat <- readRDS( "Data-Rodeo/04-Analytic-Data.rds" ) %>%
+dat <- readRDS( "03-Data-Rodeo/04-Analytic-Data.rds" ) %>%
   dplyr::filter( is.na( WTDR18YR ) == F )
 
 # Import result-generating functions
 source( "R/utils.R" ) 
 
-# covariates to adjust for in model
+
+### Fit Models on the Cancer-Survivor Data Subset ###
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------
+
+# covariates to adjust for in models
 covars.logit <- c( 'Race_binary', 'Gender', 'Age', 'KCAL', 'BMXBMI', 'HHSize', 'FoodAsstPnowic',
                 'SmokStat', 'fipr', 'KCAL', 'WeekMetMin', 'Education_bin',
                 'PrimaryCAGroup', 'CCI_Score' )
@@ -22,14 +43,18 @@ covars.logit <- c( 'Race_binary', 'Gender', 'Age', 'KCAL', 'BMXBMI', 'HHSize', '
 m <- results_function( df = dat,
                  covariates = covars.logit, y = 'BinFoodSecHH',
                  variables = c( 'FS_ENet', 'Age_ENet', 'FdAs_ENet', 'HHS_ENet', 'PC1', 'PC2' ) ,
-                 cuts = 5,
-                 subset.condition = 'Diet.ext.ind.reg == 1 & Gender == "Female"' )  %>%
-  write.table( ., "Manuscript/Tables/logit-results.txt", sep = ", ", row.names = FALSE ) 
+                 cuts = 5 )
+
+# save table of results
+write.table( m$results, "04-Manuscript/Tables/logit-results.txt", sep = ", ", row.names = FALSE ) 
+
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-## stratified models ##
+### Fit Models on the Cancer-Survivor Data Subset ###
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
-# sex
+## sex ##
 
 this.s <- levels( factor( dat$Gender ) ) 
 
@@ -42,7 +67,8 @@ for ( i in 1:length( this.s )  ){
 
 }
 
-# time since first CA diagnosis
+
+## time since first CA diagnosis ##
 
 this.t <- levels( factor( dat$TimeCAFactor ) ) 
 
@@ -55,7 +81,7 @@ for ( i in 1:length( this.t )  ){
   
 }
 
-# education
+## education ##
 
 this.e <- levels( factor( dat$Education_bin ) ) 
 
@@ -70,14 +96,18 @@ for ( i in 1:length( this.e )  ){
 
 
 rbind( out.s, out.t, out.e ) %>%
-  write.table( ., "Manuscript/Tables/stratified-results.txt", sep = ", ", row.names = FALSE ) 
+  write.table( ., "04-Manuscript/Tables/stratified-results.txt", sep = ", ", row.names = FALSE ) 
+
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
 
-## Restricted-Cubic Spline Curves for Logistic Regression Models ##
+### Logit Models with Restricted Cubic Splines ###
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------
+
 
 dat.sub <- dat %>%
-  dplyr::filter( Diet.ext.ind.reg == 1 )  %>% # use data inclusions/exclusions subset for this section
+  dplyr::filter( Diet.ext.ind.reg == 1 )  %>% # use data inclusions/exclusions subset for this section (U.S. cancer survivor subset)
   dplyr::mutate( wts.norm = WTDR18YR / mean( WTDR18YR )  )  # create normalized weights
 
 dat.sub$PrimaryCAGroup <- droplevels( dat.sub$PrimaryCAGroup )  # drop levels with zero observations  ( NMSC ) 
@@ -86,6 +116,9 @@ dat.sub$PrimaryCAGroup <- droplevels( dat.sub$PrimaryCAGroup )  # drop levels wi
 
 patterns <- c( "FS_ENet", 'Age_ENet', 'FdAs_ENet', 'HHS_ENet', 'PC1', 'PC2' ) 
 pattern.labels <- paste0( c( "FI", "Age", "SNAP", "Household Size", "Modified Western", "Prudent" ) , " Pattern Score" ) 
+
+
+## Fit Spline Models and Loop Through Diet Quality Indices ##
 
 p <- list( ) # initialize list to store plots
 for ( i in 1:length( patterns )  ) {
@@ -113,6 +146,7 @@ for ( i in 1:length( patterns )  ) {
 do.call( "ggarrange", p ) 
 
 # save
-ggsave( "Manuscript/Figures/logit-splines.jpeg", width = 30, height = 20, units = "cm" ) 
+ggsave( "04-Manuscript/Figures/logit-splines.jpeg", width = 30, height = 20, units = "cm" ) 
 
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
