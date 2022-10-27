@@ -26,7 +26,7 @@ library( GenKern )
 dat <- readRDS( "03-Data-Rodeo/04-Analytic-Data.rds" ) %>%
   dplyr::filter( is.na( WTDR18YR ) == F )
 
-# Import result-generating functions
+# import result-generating functions and helper functions
 source( "R/utils.R" ) 
 
 
