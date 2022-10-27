@@ -2,25 +2,39 @@
 ###   02-OTHER COVARIATE DATA WRANGLING
 ###-------------------------------------------------- -
 
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------
+# 
+# In this script, we will import and merge covariate data from several surveys in files obtained through the NHANES website.
+# 
+# INPUT DATA FILE: raw data files from the NHANES website, "02-Data-Wrangled/01-FPED-Wrangled.rds"
+#
+# OUTPUT FILES: "02-Data-Wrangled/01-FPED-Wrangled.rds"
+#
+# Resources: 
+# NHANES: https://www.cdc.gov/nchs/nhanes/index.htm 
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
 library( RNHANES )
 library( haven )
 library( tidyverse )
 
-## MEDICAL CONDITIONS AND CANCER DATA
-mcqdat99 <- nhanes_load_data( 'MCQ', '1999-2000', demographics = TRUE )
-mcqdat01 <- nhanes_load_data( 'MCQ', '2001-2002', demographics = TRUE )
-mcqdat03 <- nhanes_load_data( 'MCQ', '2003-2004', demographics = TRUE )
-mcqdat05 <- nhanes_load_data( 'MCQ', '2005-2006', demographics = TRUE )
-mcqdat07 <- nhanes_load_data( 'MCQ', '2007-2008', demographics = TRUE )
-mcqdat09 <- nhanes_load_data( 'MCQ', '2009-2010', demographics = TRUE )
-mcqdat11 <- nhanes_load_data( 'MCQ', '2011-2012', demographics = TRUE )
-mcqdat13 <- nhanes_load_data( 'MCQ', '2013-2014', demographics = TRUE )
-mcqdat15raw <- read_xpt( file = 'https://wwwn.cdc.gov/Nchs/Nhanes/2015-2016/MCQ_I.XPT' )
-mcqdat17raw <- read_xpt( file = 'https://wwwn.cdc.gov/Nchs/Nhanes/2017-2018/MCQ_J.XPT' )
-demodat15 <- read_xpt( file = 'https://wwwn.cdc.gov/Nchs/Nhanes/2015-2016/DEMO_I.XPT' )
-demodat17 <- read_xpt( file = 'https://wwwn.cdc.gov/Nchs/Nhanes/2017-2018/DEMO_J.XPT' )
-demodat15$cycle <- '2015-2016'
-demodat17$cycle <- '2017-2018'
+### Medical Conditions Questionnaire ###
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------
+mcqdat99 <- nhanes_load_data( "MCQ", "1999-2000", demographics = TRUE )
+mcqdat01 <- nhanes_load_data( "MCQ", "2001-2002", demographics = TRUE )
+mcqdat03 <- nhanes_load_data( "MCQ", "2003-2004", demographics = TRUE )
+mcqdat05 <- nhanes_load_data( "MCQ", "2005-2006", demographics = TRUE )
+mcqdat07 <- nhanes_load_data( "MCQ", "2007-2008", demographics = TRUE )
+mcqdat09 <- nhanes_load_data( "MCQ", "2009-2010", demographics = TRUE )
+mcqdat11 <- nhanes_load_data( "MCQ", "2011-2012", demographics = TRUE )
+mcqdat13 <- nhanes_load_data( "MCQ", "2013-2014", demographics = TRUE )
+mcqdat15raw <- read_xpt( file = "https://wwwn.cdc.gov/Nchs/Nhanes/2015-2016/MCQ_I.XPT" )
+mcqdat17raw <- read_xpt( file = "https://wwwn.cdc.gov/Nchs/Nhanes/2017-2018/MCQ_J.XPT" )
+demodat15 <- read_xpt( file = "https://wwwn.cdc.gov/Nchs/Nhanes/2015-2016/DEMO_I.XPT" )
+demodat17 <- read_xpt( file = "https://wwwn.cdc.gov/Nchs/Nhanes/2017-2018/DEMO_J.XPT" )
+demodat15$cycle <- "2015-2016"
+demodat17$cycle <- "2017-2018"
 mcqdat15 <- left_join( mcqdat15raw, demodat15 )
 mcqdat17 <- left_join( mcqdat17raw, demodat17 )
 
@@ -36,18 +50,18 @@ mcqdat15 <- mcqdat15 %>%
 mcqdat17 <- mcqdat17 %>%
   rename( MCQ190 = MCQ195 )
 
-mcqall <- ( rbind( mcqdat99[ , c( 'SEQN', 'cycle', 'RIDAGEMN', 'RIDAGEYR', 'MCQ220', 'MCQ230A', 'MCQ230B', 'MCQ230C', 'MCQ230D', 'MCQ160B', 'MCQ160C', 'MCQ160D', 'MCQ160E', 'MCQ160F', 'MCQ160A', 'MCQ160L', 'MCQ190' ) ], 
-               mcqdat01[ , c( 'SEQN', 'cycle', 'RIDAGEMN', 'RIDAGEYR', 'MCQ220', 'MCQ230A', 'MCQ230B', 'MCQ230C', 'MCQ230D', 'MCQ160B', 'MCQ160C', 'MCQ160D', 'MCQ160E', 'MCQ160F', 'MCQ160A', 'MCQ160L', 'MCQ190' ) ], 
-               mcqdat03[ , c( 'SEQN', 'cycle', 'RIDAGEMN', 'RIDAGEYR', 'MCQ220', 'MCQ230A', 'MCQ230B', 'MCQ230C', 'MCQ230D', 'MCQ160B', 'MCQ160C', 'MCQ160D', 'MCQ160E', 'MCQ160F', 'MCQ160A', 'MCQ160L', 'MCQ190' ) ], 
-               mcqdat05[ , c( 'SEQN', 'cycle', 'RIDAGEMN', 'RIDAGEYR', 'MCQ220', 'MCQ230A', 'MCQ230B', 'MCQ230C', 'MCQ230D', 'MCQ160B', 'MCQ160C', 'MCQ160D', 'MCQ160E', 'MCQ160F', 'MCQ160A', 'MCQ160L', 'MCQ190' ) ], 
-               mcqdat07[ , c( 'SEQN', 'cycle', 'RIDAGEMN', 'RIDAGEYR', 'MCQ220', 'MCQ230A', 'MCQ230B', 'MCQ230C', 'MCQ230D', 'MCQ160B', 'MCQ160C', 'MCQ160D', 'MCQ160E', 'MCQ160F', 'MCQ160A', 'MCQ160L', 'MCQ190' ) ], 
-               mcqdat09[ , c( 'SEQN', 'cycle', 'RIDAGEMN', 'RIDAGEYR', 'MCQ220', 'MCQ230A', 'MCQ230B', 'MCQ230C', 'MCQ230D', 'MCQ160B', 'MCQ160C', 'MCQ160D', 'MCQ160E', 'MCQ160F', 'MCQ160A', 'MCQ160L', 'MCQ190' ) ], 
-               mcqdat11[ , c( 'SEQN', 'cycle', 'RIDAGEMN', 'RIDAGEYR', 'MCQ220', 'MCQ230A', 'MCQ230B', 'MCQ230C', 'MCQ230D', 'MCQ160B', 'MCQ160C', 'MCQ160D', 'MCQ160E', 'MCQ160F', 'MCQ160A', 'MCQ160L', 'MCQ190' ) ], 
-               mcqdat13[ , c( 'SEQN', 'cycle', 'RIDAGEMN', 'RIDAGEYR', 'MCQ220', 'MCQ230A', 'MCQ230B', 'MCQ230C', 'MCQ230D', 'MCQ160B', 'MCQ160C', 'MCQ160D', 'MCQ160E', 'MCQ160F', 'MCQ160A', 'MCQ160L', 'MCQ190' ) ], 
-               mcqdat15[ , c( 'SEQN', 'cycle', 'RIDAGEMN', 'RIDAGEYR', 'MCQ220', 'MCQ230A', 'MCQ230B', 'MCQ230C', 'MCQ230D', 'MCQ160B', 'MCQ160C', 'MCQ160D', 'MCQ160E', 'MCQ160F', 'MCQ160A', 'MCQ160L', 'MCQ190' ) ], 
-               mcqdat17[ , c( 'SEQN', 'cycle', 'RIDAGEMN', 'RIDAGEYR', 'MCQ220', 'MCQ230A', 'MCQ230B', 'MCQ230C', 'MCQ230D', 'MCQ160B', 'MCQ160C', 'MCQ160D', 'MCQ160E', 'MCQ160F', 'MCQ160A', 'MCQ160L', 'MCQ190' ) ] ) )
+mcqall <- ( rbind( mcqdat99[ , c( "SEQN", "cycle", "RIDAGEMN", "RIDAGEYR", "MCQ220", "MCQ230A", "MCQ230B", "MCQ230C", "MCQ230D", "MCQ160B", "MCQ160C", "MCQ160D", "MCQ160E", "MCQ160F", "MCQ160A", "MCQ160L", "MCQ190" ) ], 
+               mcqdat01[ , c( "SEQN", "cycle", "RIDAGEMN", "RIDAGEYR", "MCQ220", "MCQ230A", "MCQ230B", "MCQ230C", "MCQ230D", "MCQ160B", "MCQ160C", "MCQ160D", "MCQ160E", "MCQ160F", "MCQ160A", "MCQ160L", "MCQ190" ) ], 
+               mcqdat03[ , c( "SEQN", "cycle", "RIDAGEMN", "RIDAGEYR", "MCQ220", "MCQ230A", "MCQ230B", "MCQ230C", "MCQ230D", "MCQ160B", "MCQ160C", "MCQ160D", "MCQ160E", "MCQ160F", "MCQ160A", "MCQ160L", "MCQ190" ) ], 
+               mcqdat05[ , c( "SEQN", "cycle", "RIDAGEMN", "RIDAGEYR", "MCQ220", "MCQ230A", "MCQ230B", "MCQ230C", "MCQ230D", "MCQ160B", "MCQ160C", "MCQ160D", "MCQ160E", "MCQ160F", "MCQ160A", "MCQ160L", "MCQ190" ) ], 
+               mcqdat07[ , c( "SEQN", "cycle", "RIDAGEMN", "RIDAGEYR", "MCQ220", "MCQ230A", "MCQ230B", "MCQ230C", "MCQ230D", "MCQ160B", "MCQ160C", "MCQ160D", "MCQ160E", "MCQ160F", "MCQ160A", "MCQ160L", "MCQ190" ) ], 
+               mcqdat09[ , c( "SEQN", "cycle", "RIDAGEMN", "RIDAGEYR", "MCQ220", "MCQ230A", "MCQ230B", "MCQ230C", "MCQ230D", "MCQ160B", "MCQ160C", "MCQ160D", "MCQ160E", "MCQ160F", "MCQ160A", "MCQ160L", "MCQ190" ) ], 
+               mcqdat11[ , c( "SEQN", "cycle", "RIDAGEMN", "RIDAGEYR", "MCQ220", "MCQ230A", "MCQ230B", "MCQ230C", "MCQ230D", "MCQ160B", "MCQ160C", "MCQ160D", "MCQ160E", "MCQ160F", "MCQ160A", "MCQ160L", "MCQ190" ) ], 
+               mcqdat13[ , c( "SEQN", "cycle", "RIDAGEMN", "RIDAGEYR", "MCQ220", "MCQ230A", "MCQ230B", "MCQ230C", "MCQ230D", "MCQ160B", "MCQ160C", "MCQ160D", "MCQ160E", "MCQ160F", "MCQ160A", "MCQ160L", "MCQ190" ) ], 
+               mcqdat15[ , c( "SEQN", "cycle", "RIDAGEMN", "RIDAGEYR", "MCQ220", "MCQ230A", "MCQ230B", "MCQ230C", "MCQ230D", "MCQ160B", "MCQ160C", "MCQ160D", "MCQ160E", "MCQ160F", "MCQ160A", "MCQ160L", "MCQ190" ) ], 
+               mcqdat17[ , c( "SEQN", "cycle", "RIDAGEMN", "RIDAGEYR", "MCQ220", "MCQ230A", "MCQ230B", "MCQ230C", "MCQ230D", "MCQ160B", "MCQ160C", "MCQ160D", "MCQ160E", "MCQ160F", "MCQ160A", "MCQ160L", "MCQ190" ) ] ) )
 
-# CA, CVD, and cancer site variables
+## CA, CVD, and cancer site variables ##
 mcqall <- mcqall %>% 
   mutate( CA = factor( ifelse( MCQ220 == 1, 1, 
                          ifelse( MCQ220 == 2, 0, NA ) ) ),
@@ -58,29 +72,29 @@ mcqall <- mcqall %>%
                               MCQ160F %in% c( 7, 9 ), NA, 0 ) ),
          CATYPEA = factor( MCQ230A, 
                        levels = c( 9:39, 99 ), 
-                       labels = c( 'Unknown', 'Bladder', 'Blood', 'Bone', 'Brain', 'Breast', 'Cervical', 'Colon', 
-                                'Esophageal', 'Gallbladder', 'Kidney', 'Larynx', 'Leukemia', 'Liver', 'Lung', 'Lymphoma', 'Melanoma', 
-                                'Oral/lip', 'Nervous System', 'Ovarian', 'Pancreatic', 'Prostate', 'Rectal', 'Non-Melanoma Skin', 
-                                'Skin-Other', 'Soft Tissue', 'Stomach', 'Testicular', 'Thyroid', 'Uterus', 'Other', 'Unknown' ) ),
+                       labels = c( "Unknown", "Bladder", "Blood", "Bone", "Brain", "Breast", "Cervical", "Colon", 
+                                "Esophageal", "Gallbladder", "Kidney", "Larynx", "Leukemia", "Liver", "Lung", "Lymphoma", "Melanoma", 
+                                "Oral/lip", "Nervous System", "Ovarian", "Pancreatic", "Prostate", "Rectal", "Non-Melanoma Skin", 
+                                "Skin-Other", "Soft Tissue", "Stomach", "Testicular", "Thyroid", "Uterus", "Other", "Unknown" ) ),
           CATYPEB = factor( MCQ230B, 
                        levels = c( 10:39 ), 
-                       labels = c( 'Bladder', 'Blood', 'Bone', 'Brain', 'Breast', 'Cervical', 'Colon', 
-                                'Esophageal', 'Gallbladder', 'Kidney', 'Larynx', 'Leukemia', 'Liver', 'Lung', 'Lymphoma', 'Melanoma', 
-                                'Oral/lip', 'Nervous System', 'Ovarian', 'Pancreatic', 'Prostate', 'Rectal', 'Non-Melanoma Skin', 
-                                'Skin-Other', 'Soft Tissue', 'Stomach', 'Testicular', 'Thyroid', 'Uterus', 'Other' ) ),
+                       labels = c( "Bladder", "Blood", "Bone", "Brain", "Breast", "Cervical", "Colon", 
+                                "Esophageal", "Gallbladder", "Kidney", "Larynx", "Leukemia", "Liver", "Lung", "Lymphoma", "Melanoma", 
+                                "Oral/lip", "Nervous System", "Ovarian", "Pancreatic", "Prostate", "Rectal", "Non-Melanoma Skin", 
+                                "Skin-Other", "Soft Tissue", "Stomach", "Testicular", "Thyroid", "Uterus", "Other" ) ),
           CATYPEC = factor( MCQ230C, 
                        levels = c( 10:39 ), 
-                       labels = c( 'Bladder', 'Blood', 'Bone', 'Brain', 'Breast', 'Cervical', 'Colon', 
-                                'Esophageal', 'Gallbladder', 'Kidney', 'Larynx', 'Leukemia', 'Liver', 'Lung', 'Lymphoma', 'Melanoma', 
-                                'Oral/lip', 'Nervous System', 'Ovarian', 'Pancreatic', 'Prostate', 'Rectal', 'Non-Melanoma Skin', 
-                                'Skin-Other', 'Soft Tissue', 'Stomach', 'Testicular', 'Thyroid', 'Uterus', 'Other' ) ) )
+                       labels = c( "Bladder", "Blood", "Bone", "Brain", "Breast", "Cervical", "Colon", 
+                                "Esophageal", "Gallbladder", "Kidney", "Larynx", "Leukemia", "Liver", "Lung", "Lymphoma", "Melanoma", 
+                                "Oral/lip", "Nervous System", "Ovarian", "Pancreatic", "Prostate", "Rectal", "Non-Melanoma Skin", 
+                                "Skin-Other", "Soft Tissue", "Stomach", "Testicular", "Thyroid", "Uterus", "Other" ) ) )
 
-# TIME SINCE DIAGNOSIS
+## time since diagnosis ##
 
 # bind columns indicating age at diagnosis for specific cancer types
-l <- c( 'mcqdat99',
-     paste0( 'mcqdat0', c( 1, 3, 5, 7, 9 ) ),
-     paste0( 'mcqdat', c( 11, 13, 15 ) ) )
+l <- c( "mcqdat99",
+     paste0( "mcqdat0", c( 1, 3, 5, 7, 9 ) ),
+     paste0( "mcqdat", c( 11, 13, 15 ) ) )
 
 l.2 <- list( )
 for( i in 1:length( l ) ){
@@ -91,36 +105,37 @@ for( i in 1:length( l ) ){
                                   "MCQ240U", "MCQ240V", "MCQ240W", "MCQ240X", "MCQ240Y", 
                                   "MCQ240Z", "MCQ240AA", "MCQ240BB", "MCQ240CC", "MCQ240DD" ) ] 
   
-    timeall <- do.call( 'rbind', l.2 )
+    timeall <- do.call( "rbind", l.2 )
 }
 
 
 # bind columns indicating age at diagnosis of cancer
-l.3 <- c( 'mcqdat05', 'mcqdat07', 'mcqdat09', 'mcqdat11', 'mcqdat13', 'mcqdat15' )
+l.3 <- c( "mcqdat05", "mcqdat07", "mcqdat09", "mcqdat11", "mcqdat13", "mcqdat15" )
 
 l.4 <- list( )
 for ( i in 1:length( l.3 ) ){
   
 l.4[[ i ]] <- get( l.3[ i ] )[ , c( "SEQN", "MCQ240DK" ) ]
 
-dkall <- do.call( 'rbind', l.4 )
+dkall <- do.call( "rbind", l.4 )
 }
 
 # 2017-2018 cycle columns
-time1718 <- mcqdat17[ , c( 'SEQN', 'MCD240A', 'MCD240B', 'MCD240C' ) ]
+time1718 <- mcqdat17[ , c( "SEQN", "MCD240A", "MCD240B", "MCD240C" ) ]
 
 # merge
-mcqall.b <- left_join( timeall, dkall, by = 'SEQN' ) %>%
-  left_join( mcqall, ., by = 'SEQN' ) %>%
-  left_join( ., time1718, by = 'SEQN' )
+mcqall.b <- left_join( timeall, dkall, by = "SEQN" ) %>%
+  left_join( mcqall, ., by = "SEQN" ) %>%
+  left_join( ., time1718, by = "SEQN" )
 
-# cancer site labels
-csites <- c( 'Bladder', 'Blood', 'Bone', 'Brain', 'Breast', 'Cervical', 'Colon', 
-  'Esophageal', 'Gallbladder', 'Kidney', 'Larynx', 'Leukemia', 'Liver', 'Lung', 'Lymphoma', 'Melanoma', 
-  'Oral/lip', 'Nervous System', 'Ovarian', 'Pancreatic', 'Prostate', 'Rectal', 'Non-Melanoma Skin', 
-  'Skin-Other', 'Soft Tissue', 'Stomach', 'Testicular', 'Thyroid', 'Uterus', 'Other', 'Unknown' )
 
-age.dx.var <- c( paste0( 'MCQ240', LETTERS ), paste0( 'MCQ240', c( 'AA', 'BB', 'CC', 'DD', 'DK' ) ) )
+## cancer site labels ##
+csites <- c( "Bladder", "Blood", "Bone", "Brain", "Breast", "Cervical", "Colon", 
+  "Esophageal", "Gallbladder", "Kidney", "Larynx", "Leukemia", "Liver", "Lung", "Lymphoma", "Melanoma", 
+  "Oral/lip", "Nervous System", "Ovarian", "Pancreatic", "Prostate", "Rectal", "Non-Melanoma Skin", 
+  "Skin-Other", "Soft Tissue", "Stomach", "Testicular", "Thyroid", "Uterus", "Other", "Unknown" )
+
+age.dx.var <- c( paste0( "MCQ240", LETTERS ), paste0( "MCQ240", c( "AA", "BB", "CC", "DD", "DK" ) ) )
 
 
 # Create three new variables
@@ -128,29 +143,28 @@ age.dx.var <- c( paste0( 'MCQ240', LETTERS ), paste0( 'MCQ240', c( 'AA', 'BB', '
 
 mcqall.b$AgeDxA <- NA
 for ( i in 1:length( csites ) ){
-  mcqall.b[ which( mcqall.b$CATYPEA == csites[ i ] ), 'AgeDxA' ] <- mcqall.b[ which( mcqall.b$CATYPEA == csites[ i ] ), age.dx.var[ i ]]
+  mcqall.b[ which( mcqall.b$CATYPEA == csites[ i ] ), "AgeDxA" ] <- mcqall.b[ which( mcqall.b$CATYPEA == csites[ i ] ), age.dx.var[ i ]]
 }
 
 mcqall.b$AgeDxB <- NA
 mcqall.b$AgeDxC <- NA
 for ( i in 1:30 ){
-  mcqall.b[ which( mcqall.b$CATYPEB == csites[ i ] ), 'AgeDxB' ] <- mcqall.b[ which( mcqall.b$CATYPEB == csites[ i ] ), age.dx.var[ i ]]
-  mcqall.b[ which( mcqall.b$CATYPEC == csites[ i ] ), 'AgeDxC' ] <- mcqall.b[ which( mcqall.b$CATYPEC == csites[ i ] ), age.dx.var[ i ]]
+  mcqall.b[ which( mcqall.b$CATYPEB == csites[ i ] ), "AgeDxB" ] <- mcqall.b[ which( mcqall.b$CATYPEB == csites[ i ] ), age.dx.var[ i ]]
+  mcqall.b[ which( mcqall.b$CATYPEC == csites[ i ] ), "AgeDxC" ] <- mcqall.b[ which( mcqall.b$CATYPEC == csites[ i ] ), age.dx.var[ i ]]
 }
 
 
 
-
-########## CREATE FINAL TIME SINCE DX VARIABLE AND
+## final time since diagnosis variable ##
 
 # cycle 10 ( 2017-2018 ) already has a variable with age at a, b,  and c cancer dx
 # so I will append them to new variables created
 mcqall.bc <- mcqall.b %>%
-  mutate( AgeDxA = ifelse( cycle == '2017-2018', MCD240A, AgeDxA ),
-          AgeDxB = ifelse( cycle == '2017-2018', MCD240B, AgeDxB ),
-          AgeDxC = ifelse( cycle == '2017-2018', MCD240C, AgeDxC ) )
+  mutate( AgeDxA = ifelse( cycle == "2017-2018", MCD240A, AgeDxA ),
+          AgeDxB = ifelse( cycle == "2017-2018", MCD240B, AgeDxB ),
+          AgeDxC = ifelse( cycle == "2017-2018", MCD240C, AgeDxC ) )
 
-# CREATE VARIABLES
+# create variables
 mcqall.bcd <- mcqall.bc %>%
   mutate(   AgeDxAmn = AgeDxA * 12 ,
             AgeDxBmn = AgeDxB * 12 ,
@@ -165,62 +179,62 @@ mcqall.bcd <- mcqall.bc %>%
                                     ifelse( CA == 1, RIDAGEMN-min( c( AgeDxAmn, AgeDxBmn, AgeDxCmn ),  na.rm = TRUE ), NA ) ) ) %>%
   ungroup( ) %>%
   mutate( PrimaryCA = factor( as.character( ifelse( is.na ( CATYPEA ) == F & is.na ( CATYPEB ) == T & is.na ( CATYPEC ) == T, paste0(  CATYPEA ),
-                                                    ifelse( ( is.na ( CATYPEA ) == F & is.na ( CATYPEB ) == F & is.na ( CATYPEC ) == T ) & ( TimeSinceCADX == RIDAGEYR-AgeDxB ) & CATYPEB != 'Non-Melanoma Skin', paste0( CATYPEB ),
-                                                            ifelse( ( is.na ( CATYPEA ) == F & is.na ( CATYPEB ) == F & is.na ( CATYPEC ) == T ) & ( TimeSinceCADX == RIDAGEYR-AgeDxA ) & CATYPEA != 'Non-Melanoma Skin', paste0( CATYPEA ),
-                                                                    ifelse( ( is.na ( CATYPEA ) == F & is.na ( CATYPEB ) == F & is.na ( CATYPEC ) == T ) & ( TimeSinceCADX == RIDAGEYR-AgeDxB ) & CATYPEB == 'Non-Melanoma Skin', paste0( CATYPEA ),
-                                                                            ifelse( ( is.na ( CATYPEA ) == F & is.na ( CATYPEB ) == F & is.na ( CATYPEC ) == T ) & ( TimeSinceCADX == RIDAGEYR-AgeDxA ) & CATYPEA == 'Non-Melanoma Skin', paste0( CATYPEB ),
-                                                                                    ifelse( ( is.na ( CATYPEA ) == F & is.na ( CATYPEB ) == F & is.na ( CATYPEC ) == F ) & ( TimeSinceCADX == RIDAGEYR-AgeDxA ) & CATYPEA == 'Non-Melanoma Skin' & ( AgeDxB <= AgeDxC ), paste0( CATYPEB ),
-                                                                                            ifelse( ( is.na ( CATYPEA ) == F & is.na ( CATYPEB ) == F & is.na ( CATYPEC ) == F ) & ( TimeSinceCADX == RIDAGEYR-AgeDxB ) & CATYPEB == 'Non-Melanoma Skin' & ( AgeDxA <= AgeDxC ), paste0( CATYPEA ),
-                                                                                                    ifelse( ( is.na ( CATYPEA ) == F & is.na ( CATYPEB ) == F & is.na ( CATYPEC ) == F ) & ( TimeSinceCADX == RIDAGEYR-AgeDxC ) & CATYPEC == 'Non-Melanoma Skin' & ( AgeDxA <= AgeDxB ), paste0( CATYPEA ),
-                                                                                                            ifelse( ( is.na ( CATYPEA ) == F & is.na ( CATYPEB ) == F & is.na ( CATYPEC ) == F ) & ( TimeSinceCADX == RIDAGEYR-AgeDxC ) & CATYPEC == 'Non-Melanoma Skin' & ( AgeDxA > AgeDxB ), paste0( CATYPEB ),
-                                                                                                                    ifelse( ( is.na ( CATYPEA ) == F & is.na ( CATYPEB ) == F & is.na ( CATYPEC ) == F ) & ( TimeSinceCADX == RIDAGEYR-AgeDxB ) & CATYPEB == 'Non-Melanoma Skin' & ( AgeDxA <= AgeDxC ), paste0( CATYPEA ),
-                                                                                                                            ifelse( ( is.na ( CATYPEA ) == F & is.na ( CATYPEB ) == F & is.na ( CATYPEC ) == F ) & ( TimeSinceCADX == RIDAGEYR-AgeDxB ) & CATYPEB == 'Non-Melanoma Skin' & ( AgeDxA > AgeDxC ), paste0( CATYPEC ),
-                                                                                                                                    ifelse( ( is.na ( CATYPEA ) == F & is.na ( CATYPEB ) == F & is.na ( CATYPEC ) == F ) & ( TimeSinceCADX == RIDAGEYR-AgeDxA ) & CATYPEA == 'Non-Melanoma Skin' & ( AgeDxB <= AgeDxC ), paste0( CATYPEB ),
-                                                                                                                                            ifelse( ( is.na ( CATYPEA ) == F & is.na ( CATYPEB ) == F & is.na ( CATYPEC ) == F ) & ( TimeSinceCADX == RIDAGEYR-AgeDxA ) & CATYPEA == 'Non-Melanoma Skin' & ( AgeDxB > AgeDxC ), paste0( CATYPEC ),
-                                                                                                                                                    ifelse( ( is.na ( CATYPEA ) == F & is.na ( CATYPEB ) == F & is.na ( CATYPEC ) == F ) & ( TimeSinceCADX == RIDAGEYR-AgeDxA ) & CATYPEA != 'Non-Melanoma Skin', paste0( CATYPEA ),                                                                                                         
-                                                                                                                                                            ifelse( ( is.na ( CATYPEA ) == F & is.na ( CATYPEB ) == F & is.na ( CATYPEC ) == F ) & ( TimeSinceCADX == RIDAGEYR-AgeDxB ) & CATYPEB != 'Non-Melanoma Skin', paste0( CATYPEB ),
-                                                                                                                                                                    ifelse( ( is.na ( CATYPEA ) == F & is.na ( CATYPEB ) == F & is.na ( CATYPEC ) == F ) & ( TimeSinceCADX == RIDAGEYR-AgeDxC ) & CATYPEC != 'Non-Melanoma Skin', paste0( CATYPEC ),
+                                                    ifelse( ( is.na ( CATYPEA ) == F & is.na ( CATYPEB ) == F & is.na ( CATYPEC ) == T ) & ( TimeSinceCADX == RIDAGEYR-AgeDxB ) & CATYPEB != "Non-Melanoma Skin", paste0( CATYPEB ),
+                                                            ifelse( ( is.na ( CATYPEA ) == F & is.na ( CATYPEB ) == F & is.na ( CATYPEC ) == T ) & ( TimeSinceCADX == RIDAGEYR-AgeDxA ) & CATYPEA != "Non-Melanoma Skin", paste0( CATYPEA ),
+                                                                    ifelse( ( is.na ( CATYPEA ) == F & is.na ( CATYPEB ) == F & is.na ( CATYPEC ) == T ) & ( TimeSinceCADX == RIDAGEYR-AgeDxB ) & CATYPEB == "Non-Melanoma Skin", paste0( CATYPEA ),
+                                                                            ifelse( ( is.na ( CATYPEA ) == F & is.na ( CATYPEB ) == F & is.na ( CATYPEC ) == T ) & ( TimeSinceCADX == RIDAGEYR-AgeDxA ) & CATYPEA == "Non-Melanoma Skin", paste0( CATYPEB ),
+                                                                                    ifelse( ( is.na ( CATYPEA ) == F & is.na ( CATYPEB ) == F & is.na ( CATYPEC ) == F ) & ( TimeSinceCADX == RIDAGEYR-AgeDxA ) & CATYPEA == "Non-Melanoma Skin" & ( AgeDxB <= AgeDxC ), paste0( CATYPEB ),
+                                                                                            ifelse( ( is.na ( CATYPEA ) == F & is.na ( CATYPEB ) == F & is.na ( CATYPEC ) == F ) & ( TimeSinceCADX == RIDAGEYR-AgeDxB ) & CATYPEB == "Non-Melanoma Skin" & ( AgeDxA <= AgeDxC ), paste0( CATYPEA ),
+                                                                                                    ifelse( ( is.na ( CATYPEA ) == F & is.na ( CATYPEB ) == F & is.na ( CATYPEC ) == F ) & ( TimeSinceCADX == RIDAGEYR-AgeDxC ) & CATYPEC == "Non-Melanoma Skin" & ( AgeDxA <= AgeDxB ), paste0( CATYPEA ),
+                                                                                                            ifelse( ( is.na ( CATYPEA ) == F & is.na ( CATYPEB ) == F & is.na ( CATYPEC ) == F ) & ( TimeSinceCADX == RIDAGEYR-AgeDxC ) & CATYPEC == "Non-Melanoma Skin" & ( AgeDxA > AgeDxB ), paste0( CATYPEB ),
+                                                                                                                    ifelse( ( is.na ( CATYPEA ) == F & is.na ( CATYPEB ) == F & is.na ( CATYPEC ) == F ) & ( TimeSinceCADX == RIDAGEYR-AgeDxB ) & CATYPEB == "Non-Melanoma Skin" & ( AgeDxA <= AgeDxC ), paste0( CATYPEA ),
+                                                                                                                            ifelse( ( is.na ( CATYPEA ) == F & is.na ( CATYPEB ) == F & is.na ( CATYPEC ) == F ) & ( TimeSinceCADX == RIDAGEYR-AgeDxB ) & CATYPEB == "Non-Melanoma Skin" & ( AgeDxA > AgeDxC ), paste0( CATYPEC ),
+                                                                                                                                    ifelse( ( is.na ( CATYPEA ) == F & is.na ( CATYPEB ) == F & is.na ( CATYPEC ) == F ) & ( TimeSinceCADX == RIDAGEYR-AgeDxA ) & CATYPEA == "Non-Melanoma Skin" & ( AgeDxB <= AgeDxC ), paste0( CATYPEB ),
+                                                                                                                                            ifelse( ( is.na ( CATYPEA ) == F & is.na ( CATYPEB ) == F & is.na ( CATYPEC ) == F ) & ( TimeSinceCADX == RIDAGEYR-AgeDxA ) & CATYPEA == "Non-Melanoma Skin" & ( AgeDxB > AgeDxC ), paste0( CATYPEC ),
+                                                                                                                                                    ifelse( ( is.na ( CATYPEA ) == F & is.na ( CATYPEB ) == F & is.na ( CATYPEC ) == F ) & ( TimeSinceCADX == RIDAGEYR-AgeDxA ) & CATYPEA != "Non-Melanoma Skin", paste0( CATYPEA ),                                                                                                         
+                                                                                                                                                            ifelse( ( is.na ( CATYPEA ) == F & is.na ( CATYPEB ) == F & is.na ( CATYPEC ) == F ) & ( TimeSinceCADX == RIDAGEYR-AgeDxB ) & CATYPEB != "Non-Melanoma Skin", paste0( CATYPEB ),
+                                                                                                                                                                    ifelse( ( is.na ( CATYPEA ) == F & is.na ( CATYPEB ) == F & is.na ( CATYPEC ) == F ) & ( TimeSinceCADX == RIDAGEYR-AgeDxC ) & CATYPEC != "Non-Melanoma Skin", paste0( CATYPEC ),
                                                                                                                                                                             NA ) ) ) ) ) ) ) ) ) ) ) ) ) ) ) ) ) ),
           TimeSinceCADX = ifelse( is.na ( CATYPEA ) == F & is.na ( CATYPEB ) == T & is.na ( CATYPEC ) == T, RIDAGEYR-AgeDxA,
-                                  ifelse( ( is.na ( CATYPEA ) == F & is.na ( CATYPEB ) == F & is.na ( CATYPEC ) == T ) & ( TimeSinceCADX == RIDAGEYR-AgeDxB ) & CATYPEB != 'Non-Melanoma Skin', RIDAGEYR-AgeDxB,
-                                          ifelse( ( is.na ( CATYPEA ) == F & is.na ( CATYPEB ) == F & is.na ( CATYPEC ) == T ) & ( TimeSinceCADX == RIDAGEYR-AgeDxA ) & CATYPEA != 'Non-Melanoma Skin', RIDAGEYR-AgeDxA,
-                                                  ifelse( ( is.na ( CATYPEA ) == F & is.na ( CATYPEB ) == F & is.na ( CATYPEC ) == T ) & ( TimeSinceCADX == RIDAGEYR-AgeDxB ) & CATYPEB == 'Non-Melanoma Skin', RIDAGEYR-AgeDxA,
-                                                          ifelse( ( is.na ( CATYPEA ) == F & is.na ( CATYPEB ) == F & is.na ( CATYPEC ) == T ) & ( TimeSinceCADX == RIDAGEYR-AgeDxA ) & CATYPEA == 'Non-Melanoma Skin', RIDAGEYR-AgeDxB,
-                                                                  ifelse( ( is.na ( CATYPEA ) == F & is.na ( CATYPEB ) == F & is.na ( CATYPEC ) == F ) & ( TimeSinceCADX == RIDAGEYR-AgeDxA ) & CATYPEA == 'Non-Melanoma Skin' & ( AgeDxB <= AgeDxC ), RIDAGEYR-AgeDxB,
-                                                                          ifelse( ( is.na ( CATYPEA ) == F & is.na ( CATYPEB ) == F & is.na ( CATYPEC ) == F ) & ( TimeSinceCADX == RIDAGEYR-AgeDxB ) & CATYPEB == 'Non-Melanoma Skin' & ( AgeDxA <= AgeDxC ), RIDAGEYR-AgeDxA,
-                                                                                  ifelse( ( is.na ( CATYPEA ) == F & is.na ( CATYPEB ) == F & is.na ( CATYPEC ) == F ) & ( TimeSinceCADX == RIDAGEYR-AgeDxC ) & CATYPEC == 'Non-Melanoma Skin' & ( AgeDxA <= AgeDxB ), RIDAGEYR-AgeDxA,
-                                                                                          ifelse( ( is.na ( CATYPEA ) == F & is.na ( CATYPEB ) == F & is.na ( CATYPEC ) == F ) & ( TimeSinceCADX == RIDAGEYR-AgeDxC ) & CATYPEC == 'Non-Melanoma Skin' & ( AgeDxA >= AgeDxB ), RIDAGEYR-AgeDxB,
-                                                                                                  ifelse( ( is.na ( CATYPEA ) == F & is.na ( CATYPEB ) == F & is.na ( CATYPEC ) == F ) & ( TimeSinceCADX == RIDAGEYR-AgeDxB ) & CATYPEB == 'Non-Melanoma Skin' & ( AgeDxA <= AgeDxC ), RIDAGEYR-AgeDxA,
-                                                                                                          ifelse( ( is.na ( CATYPEA ) == F & is.na ( CATYPEB ) == F & is.na ( CATYPEC ) == F ) & ( TimeSinceCADX == RIDAGEYR-AgeDxB ) & CATYPEB == 'Non-Melanoma Skin' & ( AgeDxA >= AgeDxC ), RIDAGEYR-AgeDxC,
-                                                                                                                  ifelse( ( is.na ( CATYPEA ) == F & is.na ( CATYPEB ) == F & is.na ( CATYPEC ) == F ) & ( TimeSinceCADX == RIDAGEYR-AgeDxA ) & CATYPEA == 'Non-Melanoma Skin' & ( AgeDxB <= AgeDxC ), RIDAGEYR-AgeDxB,
-                                                                                                                          ifelse( ( is.na ( CATYPEA ) == F & is.na ( CATYPEB ) == F & is.na ( CATYPEC ) == F ) & ( TimeSinceCADX == RIDAGEYR-AgeDxA ) & CATYPEA == 'Non-Melanoma Skin' & ( AgeDxB >= AgeDxC ), RIDAGEYR-AgeDxC,
-                                                                                                                                  ifelse( ( is.na ( CATYPEA ) == F & is.na ( CATYPEB ) == F & is.na ( CATYPEC ) == F ) & ( TimeSinceCADX == RIDAGEYR-AgeDxA ) & CATYPEA != 'Non-Melanoma Skin', RIDAGEYR-AgeDxA,                                                                                                         
-                                                                                                                                          ifelse( ( is.na ( CATYPEA ) == F & is.na ( CATYPEB ) == F & is.na ( CATYPEC ) == F ) & ( TimeSinceCADX == RIDAGEYR-AgeDxB ) & CATYPEB != 'Non-Melanoma Skin', RIDAGEYR-AgeDxB,
-                                                                                                                                                  ifelse( ( is.na ( CATYPEA ) == F & is.na ( CATYPEB ) == F & is.na ( CATYPEC ) == F ) & ( TimeSinceCADX == RIDAGEYR-AgeDxC ) & CATYPEC != 'Non-Melanoma Skin', RIDAGEYR-AgeDxC,
+                                  ifelse( ( is.na ( CATYPEA ) == F & is.na ( CATYPEB ) == F & is.na ( CATYPEC ) == T ) & ( TimeSinceCADX == RIDAGEYR-AgeDxB ) & CATYPEB != "Non-Melanoma Skin", RIDAGEYR-AgeDxB,
+                                          ifelse( ( is.na ( CATYPEA ) == F & is.na ( CATYPEB ) == F & is.na ( CATYPEC ) == T ) & ( TimeSinceCADX == RIDAGEYR-AgeDxA ) & CATYPEA != "Non-Melanoma Skin", RIDAGEYR-AgeDxA,
+                                                  ifelse( ( is.na ( CATYPEA ) == F & is.na ( CATYPEB ) == F & is.na ( CATYPEC ) == T ) & ( TimeSinceCADX == RIDAGEYR-AgeDxB ) & CATYPEB == "Non-Melanoma Skin", RIDAGEYR-AgeDxA,
+                                                          ifelse( ( is.na ( CATYPEA ) == F & is.na ( CATYPEB ) == F & is.na ( CATYPEC ) == T ) & ( TimeSinceCADX == RIDAGEYR-AgeDxA ) & CATYPEA == "Non-Melanoma Skin", RIDAGEYR-AgeDxB,
+                                                                  ifelse( ( is.na ( CATYPEA ) == F & is.na ( CATYPEB ) == F & is.na ( CATYPEC ) == F ) & ( TimeSinceCADX == RIDAGEYR-AgeDxA ) & CATYPEA == "Non-Melanoma Skin" & ( AgeDxB <= AgeDxC ), RIDAGEYR-AgeDxB,
+                                                                          ifelse( ( is.na ( CATYPEA ) == F & is.na ( CATYPEB ) == F & is.na ( CATYPEC ) == F ) & ( TimeSinceCADX == RIDAGEYR-AgeDxB ) & CATYPEB == "Non-Melanoma Skin" & ( AgeDxA <= AgeDxC ), RIDAGEYR-AgeDxA,
+                                                                                  ifelse( ( is.na ( CATYPEA ) == F & is.na ( CATYPEB ) == F & is.na ( CATYPEC ) == F ) & ( TimeSinceCADX == RIDAGEYR-AgeDxC ) & CATYPEC == "Non-Melanoma Skin" & ( AgeDxA <= AgeDxB ), RIDAGEYR-AgeDxA,
+                                                                                          ifelse( ( is.na ( CATYPEA ) == F & is.na ( CATYPEB ) == F & is.na ( CATYPEC ) == F ) & ( TimeSinceCADX == RIDAGEYR-AgeDxC ) & CATYPEC == "Non-Melanoma Skin" & ( AgeDxA >= AgeDxB ), RIDAGEYR-AgeDxB,
+                                                                                                  ifelse( ( is.na ( CATYPEA ) == F & is.na ( CATYPEB ) == F & is.na ( CATYPEC ) == F ) & ( TimeSinceCADX == RIDAGEYR-AgeDxB ) & CATYPEB == "Non-Melanoma Skin" & ( AgeDxA <= AgeDxC ), RIDAGEYR-AgeDxA,
+                                                                                                          ifelse( ( is.na ( CATYPEA ) == F & is.na ( CATYPEB ) == F & is.na ( CATYPEC ) == F ) & ( TimeSinceCADX == RIDAGEYR-AgeDxB ) & CATYPEB == "Non-Melanoma Skin" & ( AgeDxA >= AgeDxC ), RIDAGEYR-AgeDxC,
+                                                                                                                  ifelse( ( is.na ( CATYPEA ) == F & is.na ( CATYPEB ) == F & is.na ( CATYPEC ) == F ) & ( TimeSinceCADX == RIDAGEYR-AgeDxA ) & CATYPEA == "Non-Melanoma Skin" & ( AgeDxB <= AgeDxC ), RIDAGEYR-AgeDxB,
+                                                                                                                          ifelse( ( is.na ( CATYPEA ) == F & is.na ( CATYPEB ) == F & is.na ( CATYPEC ) == F ) & ( TimeSinceCADX == RIDAGEYR-AgeDxA ) & CATYPEA == "Non-Melanoma Skin" & ( AgeDxB >= AgeDxC ), RIDAGEYR-AgeDxC,
+                                                                                                                                  ifelse( ( is.na ( CATYPEA ) == F & is.na ( CATYPEB ) == F & is.na ( CATYPEC ) == F ) & ( TimeSinceCADX == RIDAGEYR-AgeDxA ) & CATYPEA != "Non-Melanoma Skin", RIDAGEYR-AgeDxA,                                                                                                         
+                                                                                                                                          ifelse( ( is.na ( CATYPEA ) == F & is.na ( CATYPEB ) == F & is.na ( CATYPEC ) == F ) & ( TimeSinceCADX == RIDAGEYR-AgeDxB ) & CATYPEB != "Non-Melanoma Skin", RIDAGEYR-AgeDxB,
+                                                                                                                                                  ifelse( ( is.na ( CATYPEA ) == F & is.na ( CATYPEB ) == F & is.na ( CATYPEC ) == F ) & ( TimeSinceCADX == RIDAGEYR-AgeDxC ) & CATYPEC != "Non-Melanoma Skin", RIDAGEYR-AgeDxC,
                                                                                                                                                           TimeSinceCADX ) ) ) ) ) ) ) ) ) ) ) ) ) ) ) ),
           TimeSinceCADXmn = ifelse( is.na ( CATYPEA ) == F & is.na ( CATYPEB ) == T & is.na ( CATYPEC ) == T, RIDAGEMN-AgeDxAmn,
-                                    ifelse( ( is.na ( CATYPEA ) == F & is.na ( CATYPEB ) == F & is.na ( CATYPEC ) == T ) & ( TimeSinceCADXmn == RIDAGEMN-AgeDxBmn ) & CATYPEB != 'Non-Melanoma Skin', RIDAGEMN-AgeDxBmn,
-                                            ifelse( ( is.na ( CATYPEA ) == F & is.na ( CATYPEB ) == F & is.na ( CATYPEC ) == T ) & ( TimeSinceCADXmn == RIDAGEMN-AgeDxAmn ) & CATYPEA != 'Non-Melanoma Skin', RIDAGEMN-AgeDxAmn,
-                                                    ifelse( ( is.na ( CATYPEA ) == F & is.na ( CATYPEB ) == F & is.na ( CATYPEC ) == T ) & ( TimeSinceCADXmn == RIDAGEMN-AgeDxBmn ) & CATYPEB == 'Non-Melanoma Skin', RIDAGEMN-AgeDxAmn,
-                                                            ifelse( ( is.na ( CATYPEA ) == F & is.na ( CATYPEB ) == F & is.na ( CATYPEC ) == T ) & ( TimeSinceCADXmn == RIDAGEMN-AgeDxAmn ) & CATYPEA == 'Non-Melanoma Skin', RIDAGEMN-AgeDxBmn,
-                                                                    ifelse( ( is.na ( CATYPEA ) == F & is.na ( CATYPEB ) == F & is.na ( CATYPEC ) == F ) & ( TimeSinceCADXmn == RIDAGEMN-AgeDxAmn ) & CATYPEA == 'Non-Melanoma Skin' & ( AgeDxBmn <= AgeDxCmn ), RIDAGEMN-AgeDxBmn,
-                                                                            ifelse( ( is.na ( CATYPEA ) == F & is.na ( CATYPEB ) == F & is.na ( CATYPEC ) == F ) & ( TimeSinceCADXmn == RIDAGEMN-AgeDxBmn ) & CATYPEB == 'Non-Melanoma Skin' & ( AgeDxAmn <= AgeDxCmn ), RIDAGEMN-AgeDxAmn,
-                                                                                    ifelse( ( is.na ( CATYPEA ) == F & is.na ( CATYPEB ) == F & is.na ( CATYPEC ) == F ) & ( TimeSinceCADXmn == RIDAGEMN-AgeDxCmn ) & CATYPEC == 'Non-Melanoma Skin' & ( AgeDxAmn <= AgeDxBmn ), RIDAGEMN-AgeDxAmn,
-                                                                                            ifelse( ( is.na ( CATYPEA ) == F & is.na ( CATYPEB ) == F & is.na ( CATYPEC ) == F ) & ( TimeSinceCADXmn == RIDAGEMN-AgeDxCmn ) & CATYPEC == 'Non-Melanoma Skin' & ( AgeDxAmn >= AgeDxBmn ), RIDAGEMN-AgeDxBmn,
-                                                                                                    ifelse( ( is.na ( CATYPEA ) == F & is.na ( CATYPEB ) == F & is.na ( CATYPEC ) == F ) & ( TimeSinceCADXmn == RIDAGEMN-AgeDxBmn ) & CATYPEB == 'Non-Melanoma Skin' & ( AgeDxAmn <= AgeDxCmn ), RIDAGEMN-AgeDxAmn,
-                                                                                                            ifelse( ( is.na ( CATYPEA ) == F & is.na ( CATYPEB ) == F & is.na ( CATYPEC ) == F ) & ( TimeSinceCADXmn == RIDAGEMN-AgeDxBmn ) & CATYPEB == 'Non-Melanoma Skin' & ( AgeDxAmn >= AgeDxCmn ), RIDAGEMN-AgeDxCmn,
-                                                                                                                    ifelse( ( is.na ( CATYPEA ) == F & is.na ( CATYPEB ) == F & is.na ( CATYPEC ) == F ) & ( TimeSinceCADXmn == RIDAGEMN-AgeDxAmn ) & CATYPEA == 'Non-Melanoma Skin' & ( AgeDxBmn <= AgeDxCmn ), RIDAGEMN-AgeDxBmn,
-                                                                                                                            ifelse( ( is.na ( CATYPEA ) == F & is.na ( CATYPEB ) == F & is.na ( CATYPEC ) == F ) & ( TimeSinceCADXmn == RIDAGEMN-AgeDxAmn ) & CATYPEA == 'Non-Melanoma Skin' & ( AgeDxBmn >= AgeDxCmn ), RIDAGEMN-AgeDxCmn,
-                                                                                                                                    ifelse( ( is.na ( CATYPEA ) == F & is.na ( CATYPEB ) == F & is.na ( CATYPEC ) == F ) & ( TimeSinceCADXmn == RIDAGEMN-AgeDxAmn ) & CATYPEA != 'Non-Melanoma Skin', RIDAGEMN-AgeDxAmn,                                                                                                         
-                                                                                                                                            ifelse( ( is.na ( CATYPEA ) == F & is.na ( CATYPEB ) == F & is.na ( CATYPEC ) == F ) & ( TimeSinceCADXmn == RIDAGEMN-AgeDxBmn ) & CATYPEB != 'Non-Melanoma Skin', RIDAGEMN-AgeDxBmn,
-                                                                                                                                                    ifelse( ( is.na ( CATYPEA ) == F & is.na ( CATYPEB ) == F & is.na ( CATYPEC ) == F ) & ( TimeSinceCADXmn == RIDAGEMN-AgeDxCmn ) & CATYPEC != 'Non-Melanoma Skin', RIDAGEMN-AgeDxCmn,
+                                    ifelse( ( is.na ( CATYPEA ) == F & is.na ( CATYPEB ) == F & is.na ( CATYPEC ) == T ) & ( TimeSinceCADXmn == RIDAGEMN-AgeDxBmn ) & CATYPEB != "Non-Melanoma Skin", RIDAGEMN-AgeDxBmn,
+                                            ifelse( ( is.na ( CATYPEA ) == F & is.na ( CATYPEB ) == F & is.na ( CATYPEC ) == T ) & ( TimeSinceCADXmn == RIDAGEMN-AgeDxAmn ) & CATYPEA != "Non-Melanoma Skin", RIDAGEMN-AgeDxAmn,
+                                                    ifelse( ( is.na ( CATYPEA ) == F & is.na ( CATYPEB ) == F & is.na ( CATYPEC ) == T ) & ( TimeSinceCADXmn == RIDAGEMN-AgeDxBmn ) & CATYPEB == "Non-Melanoma Skin", RIDAGEMN-AgeDxAmn,
+                                                            ifelse( ( is.na ( CATYPEA ) == F & is.na ( CATYPEB ) == F & is.na ( CATYPEC ) == T ) & ( TimeSinceCADXmn == RIDAGEMN-AgeDxAmn ) & CATYPEA == "Non-Melanoma Skin", RIDAGEMN-AgeDxBmn,
+                                                                    ifelse( ( is.na ( CATYPEA ) == F & is.na ( CATYPEB ) == F & is.na ( CATYPEC ) == F ) & ( TimeSinceCADXmn == RIDAGEMN-AgeDxAmn ) & CATYPEA == "Non-Melanoma Skin" & ( AgeDxBmn <= AgeDxCmn ), RIDAGEMN-AgeDxBmn,
+                                                                            ifelse( ( is.na ( CATYPEA ) == F & is.na ( CATYPEB ) == F & is.na ( CATYPEC ) == F ) & ( TimeSinceCADXmn == RIDAGEMN-AgeDxBmn ) & CATYPEB == "Non-Melanoma Skin" & ( AgeDxAmn <= AgeDxCmn ), RIDAGEMN-AgeDxAmn,
+                                                                                    ifelse( ( is.na ( CATYPEA ) == F & is.na ( CATYPEB ) == F & is.na ( CATYPEC ) == F ) & ( TimeSinceCADXmn == RIDAGEMN-AgeDxCmn ) & CATYPEC == "Non-Melanoma Skin" & ( AgeDxAmn <= AgeDxBmn ), RIDAGEMN-AgeDxAmn,
+                                                                                            ifelse( ( is.na ( CATYPEA ) == F & is.na ( CATYPEB ) == F & is.na ( CATYPEC ) == F ) & ( TimeSinceCADXmn == RIDAGEMN-AgeDxCmn ) & CATYPEC == "Non-Melanoma Skin" & ( AgeDxAmn >= AgeDxBmn ), RIDAGEMN-AgeDxBmn,
+                                                                                                    ifelse( ( is.na ( CATYPEA ) == F & is.na ( CATYPEB ) == F & is.na ( CATYPEC ) == F ) & ( TimeSinceCADXmn == RIDAGEMN-AgeDxBmn ) & CATYPEB == "Non-Melanoma Skin" & ( AgeDxAmn <= AgeDxCmn ), RIDAGEMN-AgeDxAmn,
+                                                                                                            ifelse( ( is.na ( CATYPEA ) == F & is.na ( CATYPEB ) == F & is.na ( CATYPEC ) == F ) & ( TimeSinceCADXmn == RIDAGEMN-AgeDxBmn ) & CATYPEB == "Non-Melanoma Skin" & ( AgeDxAmn >= AgeDxCmn ), RIDAGEMN-AgeDxCmn,
+                                                                                                                    ifelse( ( is.na ( CATYPEA ) == F & is.na ( CATYPEB ) == F & is.na ( CATYPEC ) == F ) & ( TimeSinceCADXmn == RIDAGEMN-AgeDxAmn ) & CATYPEA == "Non-Melanoma Skin" & ( AgeDxBmn <= AgeDxCmn ), RIDAGEMN-AgeDxBmn,
+                                                                                                                            ifelse( ( is.na ( CATYPEA ) == F & is.na ( CATYPEB ) == F & is.na ( CATYPEC ) == F ) & ( TimeSinceCADXmn == RIDAGEMN-AgeDxAmn ) & CATYPEA == "Non-Melanoma Skin" & ( AgeDxBmn >= AgeDxCmn ), RIDAGEMN-AgeDxCmn,
+                                                                                                                                    ifelse( ( is.na ( CATYPEA ) == F & is.na ( CATYPEB ) == F & is.na ( CATYPEC ) == F ) & ( TimeSinceCADXmn == RIDAGEMN-AgeDxAmn ) & CATYPEA != "Non-Melanoma Skin", RIDAGEMN-AgeDxAmn,                                                                                                         
+                                                                                                                                            ifelse( ( is.na ( CATYPEA ) == F & is.na ( CATYPEB ) == F & is.na ( CATYPEC ) == F ) & ( TimeSinceCADXmn == RIDAGEMN-AgeDxBmn ) & CATYPEB != "Non-Melanoma Skin", RIDAGEMN-AgeDxBmn,
+                                                                                                                                                    ifelse( ( is.na ( CATYPEA ) == F & is.na ( CATYPEB ) == F & is.na ( CATYPEC ) == F ) & ( TimeSinceCADXmn == RIDAGEMN-AgeDxCmn ) & CATYPEC != "Non-Melanoma Skin", RIDAGEMN-AgeDxCmn,
                                                                                                                                                             TimeSinceCADXmn ) ) ) ) ) ) ) ) ) ) ) ) ) ) ) ),
-          TimeCAFactor = as.factor( ifelse( TimeSinceCADX < 2,  '2 < years', 
-                                            ifelse( TimeSinceCADX >= 2 & TimeSinceCADX < 6, ' >= 2 and < 6 years', 
-                                                    ifelse( TimeSinceCADX >= 6,  ' >= 6 years', NA ) ) ) ) ,
-          TimeCAFactormn = as.factor( ifelse( TimeSinceCADXmn < 24,  '2 < years', 
-                                              ifelse( TimeSinceCADXmn >= 24 & TimeSinceCADXmn < 72, ' >= 2 and < 6 years', 
-                                                      ifelse( TimeSinceCADXmn >= 72,  ' >= 6 years', NA ) ) ) ),
+          TimeCAFactor = as.factor( ifelse( TimeSinceCADX < 2,  "2 < years", 
+                                            ifelse( TimeSinceCADX >= 2 & TimeSinceCADX < 6, " >= 2 and < 6 years", 
+                                                    ifelse( TimeSinceCADX >= 6,  " >= 6 years", NA ) ) ) ) ,
+          TimeCAFactormn = as.factor( ifelse( TimeSinceCADXmn < 24,  "2 < years", 
+                                              ifelse( TimeSinceCADXmn >= 24 & TimeSinceCADXmn < 72, " >= 2 and < 6 years", 
+                                                      ifelse( TimeSinceCADXmn >= 72,  " >= 6 years", NA ) ) ) ),
           TimeSinceCADXmn = ifelse( TimeSinceCADXmn < 0, NA, TimeSinceCADXmn ) ,
           TimeCAFactormn = ifelse( TimeSinceCADXmn < 0, NA, as.character( TimeCAFactormn ) ) ,
           TimeSinceCADX = ifelse( TimeSinceCADX < 0, NA, TimeSinceCADX ) ,
@@ -246,105 +260,116 @@ mcqall.bcd <- mcqall.bcd %>%
 # ref: https://mdpi-res.com/d_attachment/cancers/cancers-13-03368/article_deploy/cancers-13-03368-v2.pdf?version = 1625568797
 
 mcqall.bcd <- mcqall.bcd %>%
-  mutate( PrimaryCAGroup = factor( ifelse( PrimaryCA %in% c( 'Colon', 'Pancreatic', 'Rectal', 'Stomach', 'Gallbladder', 'Liver' , 'Esophageal' ), 'Gastrointestinal', 
-                                      ifelse( PrimaryCA %in% c( 'Kidney', 'Bladder' ), 'Genitourinary', 
-                                              ifelse( PrimaryCA %in% c( 'Ovarian', 'Cervical', 'Uterus' ), 'Gynecological', 
-                                                      ifelse( PrimaryCA %in% c( 'Testicular', 'Prostate' ), 'MaleReproductive', 
-                                                              ifelse( PrimaryCA %in% c( 'Breast' ), 'Breast', 
-                                                                      ifelse( PrimaryCA %in% c( 'Melanoma' ), 'Melanoma',
-                                                                              ifelse( PrimaryCA %in% c( 'Non-Melanoma Skin' ), 'Non-Melanoma Skin',
-                                                                                     ifelse( PrimaryCA %in% c( 'Skin-Other' ), 'Skin-Unknown', 
-                                                           ifelse( ( PrimaryCA %notin% c( 'Colon', 'Pancreatic', 'Rectal', 'Stomach', 'Gallbladder', 'Liver' , 'Esophageal',
-                                                                                         'Kidney', 'Bladder', 'Ovarian', 'Cervical', 'Uterus', 'Testicular', 'Prostate',
-                                                                                         'Breast', 'Melanoma', 'Non-Melanoma Skin', 'Skin-Other' ) ) & is.na( PrimaryCA ) == FALSE, 'Other', NA ) ) ) ) ) ) ) ) ) ) ) 
+  mutate( PrimaryCAGroup = factor( ifelse( PrimaryCA %in% c( "Colon", "Pancreatic", "Rectal", "Stomach", "Gallbladder", "Liver" , "Esophageal" ), "Gastrointestinal", 
+                                      ifelse( PrimaryCA %in% c( "Kidney", "Bladder" ), "Genitourinary", 
+                                              ifelse( PrimaryCA %in% c( "Ovarian", "Cervical", "Uterus" ), "Gynecological", 
+                                                      ifelse( PrimaryCA %in% c( "Testicular", "Prostate" ), "MaleReproductive", 
+                                                              ifelse( PrimaryCA %in% c( "Breast" ), "Breast", 
+                                                                      ifelse( PrimaryCA %in% c( "Melanoma" ), "Melanoma",
+                                                                              ifelse( PrimaryCA %in% c( "Non-Melanoma Skin" ), "Non-Melanoma Skin",
+                                                                                     ifelse( PrimaryCA %in% c( "Skin-Other" ), "Skin-Unknown", 
+                                                           ifelse( ( PrimaryCA %notin% c( "Colon", "Pancreatic", "Rectal", "Stomach", "Gallbladder", "Liver" , "Esophageal",
+                                                                                         "Kidney", "Bladder", "Ovarian", "Cervical", "Uterus", "Testicular", "Prostate",
+                                                                                         "Breast", "Melanoma", "Non-Melanoma Skin", "Skin-Other" ) ) & is.na( PrimaryCA ) == FALSE, "Other", NA ) ) ) ) ) ) ) ) ) ) ) 
+
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-### END CANCER DATA IMPORT
+
+### Smoking Questionnaire ###
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------
+
+smddat99 <- nhanes_load_data( "SMQ", "1999-2000", demographics = FALSE )
+smddat01 <- nhanes_load_data( "SMQ", "2001-2002", demographics = FALSE )
+smddat03 <- nhanes_load_data( "SMQ", "2003-2004", demographics = FALSE )
+smddat05 <- nhanes_load_data( "SMQ", "2005-2006", demographics = FALSE )
+smddat07 <- nhanes_load_data( "SMQ", "2007-2008", demographics = FALSE )
+smddat09 <- nhanes_load_data( "SMQ", "2009-2010", demographics = FALSE )
+smddat11 <- nhanes_load_data( "SMQ", "2011-2012", demographics = FALSE )
+smddat13 <- nhanes_load_data( "SMQ", "2013-2014", demographics = FALSE )
+smddat15 <- read_xpt( file = "https://wwwn.cdc.gov/Nchs/Nhanes/2015-2016/SMQ_I.XPT" )
+smddat17 <- read_xpt( file = "https://wwwn.cdc.gov/Nchs/Nhanes/2017-2018/SMQ_J.XPT" )
+
+smdall <- ( rbind( smddat99[ , c( "SEQN", "SMQ020", "SMQ050U", "SMQ050Q", "SMQ040" ) ], 
+               smddat01[ , c( "SEQN", "SMQ020", "SMQ050U", "SMQ050Q", "SMQ040" ) ], 
+               smddat03[ , c( "SEQN", "SMQ020", "SMQ050U", "SMQ050Q", "SMQ040" ) ], 
+               smddat05[ , c( "SEQN", "SMQ020", "SMQ050U", "SMQ050Q", "SMQ040" ) ], 
+               smddat07[ , c( "SEQN", "SMQ020", "SMQ050U", "SMQ050Q", "SMQ040" ) ], 
+               smddat09[ , c( "SEQN", "SMQ020", "SMQ050U", "SMQ050Q", "SMQ040" ) ], 
+               smddat11[ , c( "SEQN", "SMQ020", "SMQ050U", "SMQ050Q", "SMQ040" ) ], 
+               smddat13[ , c( "SEQN", "SMQ020", "SMQ050U", "SMQ050Q", "SMQ040" ) ], 
+               smddat15[ , c( "SEQN", "SMQ020", "SMQ050U", "SMQ050Q", "SMQ040" ) ], 
+               smddat17[ , c( "SEQN", "SMQ020", "SMQ050U", "SMQ050Q", "SMQ040" ) ] ) )
 
 
-## SMOKING
-smddat99 <- nhanes_load_data( 'SMQ', '1999-2000', demographics = FALSE )
-smddat01 <- nhanes_load_data( 'SMQ', '2001-2002', demographics = FALSE )
-smddat03 <- nhanes_load_data( 'SMQ', '2003-2004', demographics = FALSE )
-smddat05 <- nhanes_load_data( 'SMQ', '2005-2006', demographics = FALSE )
-smddat07 <- nhanes_load_data( 'SMQ', '2007-2008', demographics = FALSE )
-smddat09 <- nhanes_load_data( 'SMQ', '2009-2010', demographics = FALSE )
-smddat11 <- nhanes_load_data( 'SMQ', '2011-2012', demographics = FALSE )
-smddat13 <- nhanes_load_data( 'SMQ', '2013-2014', demographics = FALSE )
-smddat15 <- read_xpt( file = 'https://wwwn.cdc.gov/Nchs/Nhanes/2015-2016/SMQ_I.XPT' )
-smddat17 <- read_xpt( file = 'https://wwwn.cdc.gov/Nchs/Nhanes/2017-2018/SMQ_J.XPT' )
+smdall$SmokStat <- factor( ifelse( smdall$SMQ040 %in% c( 1, 2 ), "Current", 
+                               ifelse( smdall$SMQ040 == 3 & smdall$SMQ020 == 1,  "Former", 
+                                      ifelse( smdall$SMQ020 ==  2, "Never",  
+                                             ifelse( smdall$SMQ020 == 2 & is.na( smdall$SMQ040 ) == T, "Never", NA ) ) ) ) )
 
-smdall <- ( rbind( smddat99[ , c( 'SEQN', 'SMQ020', 'SMQ050U', 'SMQ050Q', 'SMQ040' ) ], 
-               smddat01[ , c( 'SEQN', 'SMQ020', 'SMQ050U', 'SMQ050Q', 'SMQ040' ) ], 
-               smddat03[ , c( 'SEQN', 'SMQ020', 'SMQ050U', 'SMQ050Q', 'SMQ040' ) ], 
-               smddat05[ , c( 'SEQN', 'SMQ020', 'SMQ050U', 'SMQ050Q', 'SMQ040' ) ], 
-               smddat07[ , c( 'SEQN', 'SMQ020', 'SMQ050U', 'SMQ050Q', 'SMQ040' ) ], 
-               smddat09[ , c( 'SEQN', 'SMQ020', 'SMQ050U', 'SMQ050Q', 'SMQ040' ) ], 
-               smddat11[ , c( 'SEQN', 'SMQ020', 'SMQ050U', 'SMQ050Q', 'SMQ040' ) ], 
-               smddat13[ , c( 'SEQN', 'SMQ020', 'SMQ050U', 'SMQ050Q', 'SMQ040' ) ], 
-               smddat15[ , c( 'SEQN', 'SMQ020', 'SMQ050U', 'SMQ050Q', 'SMQ040' ) ], 
-               smddat17[ , c( 'SEQN', 'SMQ020', 'SMQ050U', 'SMQ050Q', 'SMQ040' ) ] ) )
-
-
-smdall$SmokStat <- factor( ifelse( smdall$SMQ040 %in% c( 1, 2 ), 'Current', 
-                               ifelse( smdall$SMQ040 == 3 & smdall$SMQ020 == 1,  'Former', 
-                                      ifelse( smdall$SMQ020 ==  2, 'Never',  
-                                             ifelse( smdall$SMQ020 == 2 & is.na( smdall$SMQ040 ) == T, 'Never', NA ) ) ) ) )
-
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
                               
-# DRINKING
-alqdat99 <- nhanes_load_data( 'ALQ', '1999-2000', demographics = TRUE )
-alqdat01 <- nhanes_load_data( 'ALQ', '2001-2002', demographics = TRUE )
-alqdat03 <- nhanes_load_data( 'ALQ', '2003-2004', demographics = TRUE )
-alqdat05 <- nhanes_load_data( 'ALQ', '2005-2006', demographics = TRUE )
-alqdat07 <- nhanes_load_data( 'ALQ', '2007-2008', demographics = TRUE )
-alqdat09 <- nhanes_load_data( 'ALQ', '2009-2010', demographics = TRUE )
-alqdat11 <- nhanes_load_data( 'ALQ', '2011-2012', demographics = TRUE )
-alqdat13 <- nhanes_load_data( 'ALQ', '2013-2014', demographics = TRUE )
-alqdat15 <- read_xpt( file = 'https://wwwn.cdc.gov/Nchs/Nhanes/2015-2016/ALQ_I.XPT' )
-alqdat17 <- read_xpt( file = 'https://wwwn.cdc.gov/Nchs/Nhanes/2017-2018/ALQ_J.XPT' )
-demodat15 <- read_xpt( file = 'https://wwwn.cdc.gov/Nchs/Nhanes/2015-2016/DEMO_I.XPT' )
-demodat17 <- read_xpt( file = 'https://wwwn.cdc.gov/Nchs/Nhanes/2017-2018/DEMO_J.XPT' )
-alqdat15 <- left_join( alqdat15, demodat15, by = 'SEQN' )
-alqdat17 <- left_join( alqdat17, demodat17, by = 'SEQN' )
+### Drinking Questionnaire ###
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
-alqall <- ( rbind( alqdat99[ , c( 'SEQN', 'RIAGENDR', 'ALQ130' ) ], 
-               alqdat01[ , c( 'SEQN', 'RIAGENDR', 'ALQ130' ) ], 
-               alqdat03[ , c( 'SEQN', 'RIAGENDR', 'ALQ130' ) ], 
-               alqdat05[ , c( 'SEQN', 'RIAGENDR', 'ALQ130' ) ], 
-               alqdat07[ , c( 'SEQN', 'RIAGENDR', 'ALQ130' ) ], 
-               alqdat09[ , c( 'SEQN', 'RIAGENDR', 'ALQ130' ) ], 
-               alqdat11[ , c( 'SEQN', 'RIAGENDR', 'ALQ130' ) ], 
-               alqdat13[ , c( 'SEQN', 'RIAGENDR', 'ALQ130' ) ], 
-               alqdat15[ , c( 'SEQN', 'RIAGENDR', 'ALQ130' ) ], 
-               alqdat17[ , c( 'SEQN', 'RIAGENDR', 'ALQ130' ) ] ) )
+alqdat99 <- nhanes_load_data( "ALQ", "1999-2000", demographics = TRUE )
+alqdat01 <- nhanes_load_data( "ALQ", "2001-2002", demographics = TRUE )
+alqdat03 <- nhanes_load_data( "ALQ", "2003-2004", demographics = TRUE )
+alqdat05 <- nhanes_load_data( "ALQ", "2005-2006", demographics = TRUE )
+alqdat07 <- nhanes_load_data( "ALQ", "2007-2008", demographics = TRUE )
+alqdat09 <- nhanes_load_data( "ALQ", "2009-2010", demographics = TRUE )
+alqdat11 <- nhanes_load_data( "ALQ", "2011-2012", demographics = TRUE )
+alqdat13 <- nhanes_load_data( "ALQ", "2013-2014", demographics = TRUE )
+alqdat15 <- read_xpt( file = "https://wwwn.cdc.gov/Nchs/Nhanes/2015-2016/ALQ_I.XPT" )
+alqdat17 <- read_xpt( file = "https://wwwn.cdc.gov/Nchs/Nhanes/2017-2018/ALQ_J.XPT" )
+demodat15 <- read_xpt( file = "https://wwwn.cdc.gov/Nchs/Nhanes/2015-2016/DEMO_I.XPT" )
+demodat17 <- read_xpt( file = "https://wwwn.cdc.gov/Nchs/Nhanes/2017-2018/DEMO_J.XPT" )
+alqdat15 <- left_join( alqdat15, demodat15, by = "SEQN" )
+alqdat17 <- left_join( alqdat17, demodat17, by = "SEQN" )
+
+alqall <- ( rbind( alqdat99[ , c( "SEQN", "RIAGENDR", "ALQ130" ) ], 
+               alqdat01[ , c( "SEQN", "RIAGENDR", "ALQ130" ) ], 
+               alqdat03[ , c( "SEQN", "RIAGENDR", "ALQ130" ) ], 
+               alqdat05[ , c( "SEQN", "RIAGENDR", "ALQ130" ) ], 
+               alqdat07[ , c( "SEQN", "RIAGENDR", "ALQ130" ) ], 
+               alqdat09[ , c( "SEQN", "RIAGENDR", "ALQ130" ) ], 
+               alqdat11[ , c( "SEQN", "RIAGENDR", "ALQ130" ) ], 
+               alqdat13[ , c( "SEQN", "RIAGENDR", "ALQ130" ) ], 
+               alqdat15[ , c( "SEQN", "RIAGENDR", "ALQ130" ) ], 
+               alqdat17[ , c( "SEQN", "RIAGENDR", "ALQ130" ) ] ) )
 
 alqall$ALCUSE <- factor( ifelse( alqall$RIAGENDR == 1 & alqall$ALQ130 > 2 & alqall$ALQ130 < 999 & is.na( alqall$ALQ130 ) == F, 1, 
                                ifelse( alqall$RIAGENDR == 1 & alqall$ALQ130 <= 2 & is.na( alqall$ALQ130 ) == F, 0, 
                                       ifelse( alqall$RIAGENDR == 2 & alqall$ALQ130 > 1 & alqall$ALQ130 < 999 & is.na( alqall$ALQ130 ) == F, 1, 
                                              ifelse( alqall$RIAGENDR == 2 & alqall$ALQ130 <= 1 & is.na( alqall$ALQ130 ) == F, 0, 
-                                      ifelse( alqall$ALQ130 == 999 & is.na( alqall$ALQ130 ) == F, NA, NA ) ) ) ) ), levels = c( 0, 1 ), labels = c( 'None/moderate', 'Heavy' ) )
+                                      ifelse( alqall$ALQ130 == 999 & is.na( alqall$ALQ130 ) == F, NA, NA ) ) ) ) ), levels = c( 0, 1 ), labels = c( "None/moderate", "Heavy" ) )
+
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-## FOOD SECURITY
+
+### Food Insecurity Questionnaire ###
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
 ## food security data is not available for 2017
-fsddat99 <- nhanes_load_data( 'FSQ', '1999-2000', demographics = FALSE )
-fsddat01 <- nhanes_load_data( 'FSQ', '2001-2002', demographics = FALSE )
-fsddat03 <- nhanes_load_data( 'FSQ', '2003-2004', demographics = FALSE )
-fsddat05 <- nhanes_load_data( 'FSQ', '2005-2006', demographics = FALSE )
-fsddat07 <- nhanes_load_data( 'FSQ', '2007-2008', demographics = FALSE )
-fsddat09 <- nhanes_load_data( 'FSQ', '2009-2010', demographics = FALSE )
-fsddat11 <- nhanes_load_data( 'FSQ', '2011-2012', demographics = FALSE )
-fsddat13 <- nhanes_load_data( 'FSQ', '2013-2014', demographics = FALSE )
-fsddat15 <- read_xpt( file = 'https://wwwn.cdc.gov/Nchs/Nhanes/2015-2016/FSQ_I.XPT' )
-fsddat17 <- read_xpt( file = 'https://wwwn.cdc.gov/Nchs/Nhanes/2017-2018/FSQ_J.XPT' )
+fsddat99 <- nhanes_load_data( "FSQ", "1999-2000", demographics = FALSE )
+fsddat01 <- nhanes_load_data( "FSQ", "2001-2002", demographics = FALSE )
+fsddat03 <- nhanes_load_data( "FSQ", "2003-2004", demographics = FALSE )
+fsddat05 <- nhanes_load_data( "FSQ", "2005-2006", demographics = FALSE )
+fsddat07 <- nhanes_load_data( "FSQ", "2007-2008", demographics = FALSE )
+fsddat09 <- nhanes_load_data( "FSQ", "2009-2010", demographics = FALSE )
+fsddat11 <- nhanes_load_data( "FSQ", "2011-2012", demographics = FALSE )
+fsddat13 <- nhanes_load_data( "FSQ", "2013-2014", demographics = FALSE )
+fsddat15 <- read_xpt( file = "https://wwwn.cdc.gov/Nchs/Nhanes/2015-2016/FSQ_I.XPT" )
+fsddat17 <- read_xpt( file = "https://wwwn.cdc.gov/Nchs/Nhanes/2017-2018/FSQ_J.XPT" )
 
-fsd0305 <- rbind( fsddat03[ , c( 'SEQN', 'FSDHH', 'FSDAD', 'FSQ162', 'FSQ170' ) ], fsddat05[ , c( 'SEQN', 'FSDHH', 'FSDAD', 'FSQ162', 'FSQ170' ) ] )
-fsd0712 <- rbind( fsddat07[ , c( 'SEQN', 'FSDHH', 'FSDAD', 'FSQ162', 'FSQ171', 'FSQ165' ) ], fsddat09[ , c( 'SEQN', 'FSDHH', 'FSDAD', 'FSQ162', 'FSQ171', 'FSQ165' ) ], 
-               fsddat11[ , c( 'SEQN', 'FSDHH', 'FSDAD', 'FSQ162', 'FSQ171', 'FSQ165' ) ] )
+# retain variables of interest
+fsd0305 <- rbind( fsddat03[ , c( "SEQN", "FSDHH", "FSDAD", "FSQ162", "FSQ170" ) ], fsddat05[ , c( "SEQN", "FSDHH", "FSDAD", "FSQ162", "FSQ170" ) ] )
+fsd0712 <- rbind( fsddat07[ , c( "SEQN", "FSDHH", "FSDAD", "FSQ162", "FSQ171", "FSQ165" ) ], fsddat09[ , c( "SEQN", "FSDHH", "FSDAD", "FSQ162", "FSQ171", "FSQ165" ) ], 
+               fsddat11[ , c( "SEQN", "FSDHH", "FSDAD", "FSQ162", "FSQ171", "FSQ165" ) ] )
 
+# clean up variables to ensure easy merge across cycles
 fsd0712 <- fsd0712 %>%
   mutate( FSQ171 = ifelse( FSQ165 ==  2, 2, FSQ171 ) ) %>%
   mutate( FSQ170 = ifelse( FSQ165 == 2, 2, 
@@ -355,8 +380,8 @@ fsd0712 <- fsd0712 %>%
 sum( is.na( fsd0712$FSQ170 ) )
 
 
-fsd1317 <- rbind( fsddat13[ , c( 'SEQN', 'FSDHH', 'FSDAD', 'FSQ162', 'FSQ012', 'FSQ165' ) ], fsddat15[ , c( 'SEQN', 'FSDHH', 'FSDAD', 'FSQ162', 'FSQ012', 'FSQ165' ) ], 
-               fsddat17[ , c( 'SEQN', 'FSDHH', 'FSDAD', 'FSQ162', 'FSQ012', 'FSQ165' ) ] )
+fsd1317 <- rbind( fsddat13[ , c( "SEQN", "FSDHH", "FSDAD", "FSQ162", "FSQ012", "FSQ165" ) ], fsddat15[ , c( "SEQN", "FSDHH", "FSDAD", "FSQ162", "FSQ012", "FSQ165" ) ], 
+               fsddat17[ , c( "SEQN", "FSDHH", "FSDAD", "FSQ162", "FSQ012", "FSQ165" ) ] )
 
 fsd1317 <- fsd1317 %>%
   mutate( FSQ012 = ifelse( FSQ165 ==  2, 2, FSQ012 ) ) %>%
@@ -367,19 +392,20 @@ fsd1317 <- fsd1317 %>%
 
 
 
-fsd9901 <- rbind( fsddat99[ , c( 'SEQN', 'HHFDSEC', 'ADFDSEC', 'FSD160', 'FSD170N' ) ], fsddat01[ , c( 'SEQN', 'HHFDSEC', 'ADFDSEC', 'FSD160', 'FSD170N' ) ] )
+fsd9901 <- rbind( fsddat99[ , c( "SEQN", "HHFDSEC", "ADFDSEC", "FSD160", "FSD170N" ) ], fsddat01[ , c( "SEQN", "HHFDSEC", "ADFDSEC", "FSD160", "FSD170N" ) ] )
 table( fsd9901$FSD170N )
 fsd9901 <- fsd9901 %>%
   mutate( FSQ170 = ifelse( FSD170N %in% c( 1:7 ), 1, 
                        ifelse( is.na( FSD170N ) == T, 2, NA ) ) ) %>%
   select(-FSD170N )
 
-colnames( fsd9901 ) <- c( 'SEQN', 'FSDHH', 'FSDAD', 'FSD160', 'FSQ170' )
-colnames( fsd0305 ) <- c( 'SEQN', 'FSDHH', 'FSDAD', 'FSD160', 'FSQ170' )
-colnames( fsd0712 ) <- c( 'SEQN', 'FSDHH', 'FSDAD', 'FSD160', 'FSQ170' )
-colnames( fsd1317 ) <- c( 'SEQN', 'FSDHH', 'FSDAD', 'FSD160', 'FSQ170' )
+# rename columns for easy merge
+colnames( fsd9901 ) <- c( "SEQN", "FSDHH", "FSDAD", "FSD160", "FSQ170" )
+colnames( fsd0305 ) <- c( "SEQN", "FSDHH", "FSDAD", "FSD160", "FSQ170" )
+colnames( fsd0712 ) <- c( "SEQN", "FSDHH", "FSDAD", "FSD160", "FSQ170" )
+colnames( fsd1317 ) <- c( "SEQN", "FSDHH", "FSDAD", "FSD160", "FSQ170" )
 
-
+# rowbind to get all the food insecurity data together
 fsdall <- rbind( fsd9901, fsd0305, fsd0712, fsd1317 )
 nrow( fsdall )
 table( fsdall$FSQ170 ) 
@@ -390,21 +416,21 @@ fsdall <- fsdall %>%
 table( fsdall$FSQ170 ) 
 
 
-# ordinal FS variables
-fsdall$FoodSecCatHH <- factor( fsdall$FSDHH, levels = c( 1, 2, 3, 4 ), labels = c( 'Full', 'Marginal', 'Low', 'Very Low' ), 
+# create ordinal FS variables
+fsdall$FoodSecCatHH <- factor( fsdall$FSDHH, levels = c( 1, 2, 3, 4 ), labels = c( "Full", "Marginal", "Low", "Very Low" ), 
                              ordered = TRUE )
-fsdall$FoodSecCatAD <- factor( fsdall$FSDAD, levels = c( 1, 2, 3, 4 ), labels = c( 'Full', 'Marginal', 'Low', 'Very Low' ), 
+fsdall$FoodSecCatAD <- factor( fsdall$FSDAD, levels = c( 1, 2, 3, 4 ), labels = c( "Full", "Marginal", "Low", "Very Low" ), 
                              ordered = TRUE )
 
 # Food assistance ( WIC or Food Stamps at household level in last 12 months )
 
-fsdall$FoodAsstP <- factor( ifelse( ( fsdall$FSD160 == 1 | fsdall$FSQ170 == 1 ), 'yes', 
-                                ifelse( ( fsdall$FSD160 == 2 | fsdall$FSQ170 == 2 ), 'no', NA ) ) )
+fsdall$FoodAsstP <- factor( ifelse( ( fsdall$FSD160 == 1 | fsdall$FSQ170 == 1 ), "yes", 
+                                ifelse( ( fsdall$FSD160 == 2 | fsdall$FSQ170 == 2 ), "no", NA ) ) )
 
 # Food assistance ( Food Stamps at household level in last 12 months-- No WIC included )
 
-fsdall$FoodAsstPnowic <- factor( ifelse( fsdall$FSQ170 == 1, 'yes', 
-                                ifelse( fsdall$FSQ170 == 2, 'no', NA ) ) )
+fsdall$FoodAsstPnowic <- factor( ifelse( fsdall$FSQ170 == 1, "yes", 
+                                ifelse( fsdall$FSQ170 == 2, "no", NA ) ) )
 
 table( fsdall$FSQ170 )
 table( fsdall$FoodAsstP )
@@ -413,135 +439,152 @@ table( fsdall$FoodAsstPnowic )
 table( fsd9901$FSQ170 )
 
 # binary FS variables
-fsdall$BinFoodSecHH <- factor( fsdall$FSDHH, levels = c( 1, 2, 3, 4 ), labels = c( 'High', 'High', 'Low', 'Low' ) )
-fsdall$BinFoodSecAD <- factor( fsdall$FSDAD, levels = c( 1, 2, 3, 4 ), labels = c( 'High', 'High', 'Low', 'Low' ) )
+fsdall$BinFoodSecHH <- factor( fsdall$FSDHH, levels = c( 1, 2, 3, 4 ), labels = c( "High", "High", "Low", "Low" ) )
+fsdall$BinFoodSecAD <- factor( fsdall$FSDAD, levels = c( 1, 2, 3, 4 ), labels = c( "High", "High", "Low", "Low" ) )
+
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-# DEMOGRAPHIC DATA
+### Demographic Questionnaire ###
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
-demodat99 <- nhanes_load_data( 'DEMO', '1999-2000' )
-demodat01 <- nhanes_load_data( 'DEMO', '2001-2002' )
-demodat03 <- nhanes_load_data( 'DEMO', '2003-2004' )
-demodat05 <- nhanes_load_data( 'DEMO', '2005-2006' )
-demodat07 <- nhanes_load_data( 'DEMO', '2007-2008' )
-demodat09 <- nhanes_load_data( 'DEMO', '2009-2010' )
-demodat11 <- nhanes_load_data( 'DEMO', '2011-2012' )
-demodat13 <- nhanes_load_data( 'DEMO', '2013-2014' )
-demodat15$cycle <- '2015-2016'
-demodat17$cycle <- '2017-2018'
-demo9905 <- rbind( demodat99[ , c( 'SEQN', 'RIAGENDR', 'SDDSRVYR', 'SDMVPSU', 'SDMVSTRA', 'WTINT2YR', 'RIDAGEYR', 'DMDMARTL', 'RIDRETH1', 'INDFMPIR', 'DMDHHSIZ', 'INDHHINC', 'DMDEDUC2' ) ], 
-               demodat01[ , c( 'SEQN', 'RIAGENDR', 'SDDSRVYR', 'SDMVPSU', 'SDMVSTRA', 'WTINT2YR', 'RIDAGEYR', 'DMDMARTL', 'RIDRETH1', 'INDFMPIR', 'DMDHHSIZ', 'INDHHINC', 'DMDEDUC2' ) ], 
-               demodat03[ , c( 'SEQN', 'RIAGENDR', 'SDDSRVYR', 'SDMVPSU', 'SDMVSTRA', 'WTINT2YR', 'RIDAGEYR', 'DMDMARTL', 'RIDRETH1', 'INDFMPIR', 'DMDHHSIZ', 'INDHHINC', 'DMDEDUC2' ) ], 
-               demodat05[ c( 'SEQN', 'RIAGENDR', 'SDDSRVYR', 'SDMVPSU', 'SDMVSTRA', 'WTINT2YR', 'RIDAGEYR', 'DMDMARTL', 'RIDRETH1', 'INDFMPIR', 'DMDHHSIZ', 'INDHHINC', 'DMDEDUC2' ) ] )
+# import demo data and keep variables of interest
 
-demo0717 <- rbind( demodat07[ , c( 'SEQN', 'RIAGENDR', 'SDDSRVYR', 'SDMVPSU', 'SDMVSTRA', 'WTINT2YR', 'RIDAGEYR', 'DMDMARTL', 'RIDRETH1', 'INDFMPIR', 'DMDHHSIZ', 'INDHHIN2', 'DMDEDUC2' ) ], 
-               demodat09[ , c( 'SEQN', 'RIAGENDR', 'SDDSRVYR', 'SDMVPSU', 'SDMVSTRA', 'WTINT2YR', 'RIDAGEYR', 'DMDMARTL', 'RIDRETH1', 'INDFMPIR', 'DMDHHSIZ', 'INDHHIN2', 'DMDEDUC2' ) ], 
-               demodat11[ , c( 'SEQN', 'RIAGENDR', 'SDDSRVYR', 'SDMVPSU', 'SDMVSTRA', 'WTINT2YR', 'RIDAGEYR', 'DMDMARTL', 'RIDRETH1', 'INDFMPIR', 'DMDHHSIZ', 'INDHHIN2', 'DMDEDUC2' ) ], 
-               demodat13[ , c( 'SEQN', 'RIAGENDR', 'SDDSRVYR', 'SDMVPSU', 'SDMVSTRA', 'WTINT2YR', 'RIDAGEYR', 'DMDMARTL', 'RIDRETH1', 'INDFMPIR', 'DMDHHSIZ', 'INDHHIN2', 'DMDEDUC2' ) ], 
-               demodat15[ , c( 'SEQN', 'RIAGENDR', 'SDDSRVYR', 'SDMVPSU', 'SDMVSTRA', 'WTINT2YR', 'RIDAGEYR', 'DMDMARTL', 'RIDRETH1', 'INDFMPIR', 'DMDHHSIZ', 'INDHHIN2', 'DMDEDUC2' ) ], 
-               demodat17[ , c( 'SEQN', 'RIAGENDR', 'SDDSRVYR', 'SDMVPSU', 'SDMVSTRA', 'WTINT2YR', 'RIDAGEYR', 'DMDMARTL', 'RIDRETH1', 'INDFMPIR', 'DMDHHSIZ', 'INDHHIN2', 'DMDEDUC2' ) ] )
+demodat99 <- nhanes_load_data( "DEMO", "1999-2000" )
+demodat01 <- nhanes_load_data( "DEMO", "2001-2002" )
+demodat03 <- nhanes_load_data( "DEMO", "2003-2004" )
+demodat05 <- nhanes_load_data( "DEMO", "2005-2006" )
+demodat07 <- nhanes_load_data( "DEMO", "2007-2008" )
+demodat09 <- nhanes_load_data( "DEMO", "2009-2010" )
+demodat11 <- nhanes_load_data( "DEMO", "2011-2012" )
+demodat13 <- nhanes_load_data( "DEMO", "2013-2014" )
+demodat15$cycle <- "2015-2016"
+demodat17$cycle <- "2017-2018"
+demo9905 <- rbind( demodat99[ , c( "SEQN", "RIAGENDR", "SDDSRVYR", "SDMVPSU", "SDMVSTRA", "WTINT2YR", "RIDAGEYR", "DMDMARTL", "RIDRETH1", "INDFMPIR", "DMDHHSIZ", "INDHHINC", "DMDEDUC2" ) ], 
+               demodat01[ , c( "SEQN", "RIAGENDR", "SDDSRVYR", "SDMVPSU", "SDMVSTRA", "WTINT2YR", "RIDAGEYR", "DMDMARTL", "RIDRETH1", "INDFMPIR", "DMDHHSIZ", "INDHHINC", "DMDEDUC2" ) ], 
+               demodat03[ , c( "SEQN", "RIAGENDR", "SDDSRVYR", "SDMVPSU", "SDMVSTRA", "WTINT2YR", "RIDAGEYR", "DMDMARTL", "RIDRETH1", "INDFMPIR", "DMDHHSIZ", "INDHHINC", "DMDEDUC2" ) ], 
+               demodat05[ c( "SEQN", "RIAGENDR", "SDDSRVYR", "SDMVPSU", "SDMVSTRA", "WTINT2YR", "RIDAGEYR", "DMDMARTL", "RIDRETH1", "INDFMPIR", "DMDHHSIZ", "INDHHINC", "DMDEDUC2" ) ] )
 
-colnames( demo9905 ) <- c( 'SEQN', 'Gender', 'Cycle', 'SDMVPSU', 'SDMVSTRA', 'WTINT2YR', 'Age', 'MaritalStatus', 'Race', 'INDFMPIR', 'HHSize', 'HHIncome', 'Education' )
-colnames( demo0717 ) <- c( 'SEQN', 'Gender', 'Cycle', 'SDMVPSU', 'SDMVSTRA', 'WTINT2YR', 'Age', 'MaritalStatus', 'Race', 'INDFMPIR', 'HHSize', 'HHIncome', 'Education' )
+demo0717 <- rbind( demodat07[ , c( "SEQN", "RIAGENDR", "SDDSRVYR", "SDMVPSU", "SDMVSTRA", "WTINT2YR", "RIDAGEYR", "DMDMARTL", "RIDRETH1", "INDFMPIR", "DMDHHSIZ", "INDHHIN2", "DMDEDUC2" ) ], 
+               demodat09[ , c( "SEQN", "RIAGENDR", "SDDSRVYR", "SDMVPSU", "SDMVSTRA", "WTINT2YR", "RIDAGEYR", "DMDMARTL", "RIDRETH1", "INDFMPIR", "DMDHHSIZ", "INDHHIN2", "DMDEDUC2" ) ], 
+               demodat11[ , c( "SEQN", "RIAGENDR", "SDDSRVYR", "SDMVPSU", "SDMVSTRA", "WTINT2YR", "RIDAGEYR", "DMDMARTL", "RIDRETH1", "INDFMPIR", "DMDHHSIZ", "INDHHIN2", "DMDEDUC2" ) ], 
+               demodat13[ , c( "SEQN", "RIAGENDR", "SDDSRVYR", "SDMVPSU", "SDMVSTRA", "WTINT2YR", "RIDAGEYR", "DMDMARTL", "RIDRETH1", "INDFMPIR", "DMDHHSIZ", "INDHHIN2", "DMDEDUC2" ) ], 
+               demodat15[ , c( "SEQN", "RIAGENDR", "SDDSRVYR", "SDMVPSU", "SDMVSTRA", "WTINT2YR", "RIDAGEYR", "DMDMARTL", "RIDRETH1", "INDFMPIR", "DMDHHSIZ", "INDHHIN2", "DMDEDUC2" ) ], 
+               demodat17[ , c( "SEQN", "RIAGENDR", "SDDSRVYR", "SDMVPSU", "SDMVSTRA", "WTINT2YR", "RIDAGEYR", "DMDMARTL", "RIDRETH1", "INDFMPIR", "DMDHHSIZ", "INDHHIN2", "DMDEDUC2" ) ] )
+
+# ensure same column names given differences across cycles
+colnames( demo9905 ) <- c( "SEQN", "Gender", "Cycle", "SDMVPSU", "SDMVSTRA", "WTINT2YR", "Age", "MaritalStatus", "Race", "INDFMPIR", "HHSize", "HHIncome", "Education" )
+colnames( demo0717 ) <- c( "SEQN", "Gender", "Cycle", "SDMVPSU", "SDMVSTRA", "WTINT2YR", "Age", "MaritalStatus", "Race", "INDFMPIR", "HHSize", "HHIncome", "Education" )
+
+# bind the data together
 demoall <- rbind( demo9905, demo0717 )
 nrow( demoall )
-sum( is.na( demoall$HHIncome ) )
+
+# relabel some covariates
 demoall <- demoall %>%
-  mutate( Gender = factor( Gender, levels = c( 1, 2 ), labels = c( 'Male', 'Female' ) ) ) %>%
-  mutate( Agecat = factor( ifelse( Age >= 60,  'elderly', 
-                       ifelse( Age < 60, 'non-elderly',  NA ) ) ) ) %>%
-  mutate( Race_binary = factor( ifelse( Race %in% c( 1, 2, 4, 5 ), 'Minority', 
-                            ifelse( Race == 3, 'White', NA ) ) ) ) %>%
-  mutate( Race = factor( Race, levels = c( 1, 2, 3, 4, 5 ), labels = c( 'Mexican American', 'Other Hispanic', 
-                                                       'Non-Hispanic White', 'Non-Hispanic Black', 'Other/Multiracial' ) ) ) %>%
-  mutate( MaritalStatus = factor( MaritalStatus, levels = c( 1, 2, 3, 4, 5, 6, 77, 99 ), labels = c( 'Married', 'Widowed', 
-                                                                                 'Divorced/Separated', 
-                                                                                 'Divorced/Separated', 
-                                                                                 'Never Married', 
-                                                                                 'Living w/ Partner' ), 
+  mutate( Gender = factor( Gender, levels = c( 1, 2 ), labels = c( "Male", "Female" ) ) ) %>%
+  mutate( Agecat = factor( ifelse( Age >= 60,  "elderly", 
+                       ifelse( Age < 60, "non-elderly",  NA ) ) ) ) %>%
+  mutate( Race_binary = factor( ifelse( Race %in% c( 1, 2, 4, 5 ), "Minority", 
+                            ifelse( Race == 3, "White", NA ) ) ) ) %>%
+  mutate( Race = factor( Race, levels = c( 1, 2, 3, 4, 5 ), labels = c( "Mexican American", "Other Hispanic", 
+                                                       "Non-Hispanic White", "Non-Hispanic Black", "Other/Multiracial" ) ) ) %>%
+  mutate( MaritalStatus = factor( MaritalStatus, levels = c( 1, 2, 3, 4, 5, 6, 77, 99 ), labels = c( "Married", "Widowed", 
+                                                                                 "Divorced/Separated", 
+                                                                                 "Divorced/Separated", 
+                                                                                 "Never Married", 
+                                                                                 "Living w/ Partner" ), 
                                                                                  exclude = c( 77, 99 ) ) ) %>%
-  mutate( HHIncome = factor( HHIncome, levels = c( 1:15, 77, 99 ), labels = c( ' < 35k', ' < 35k', ' < 35k', ' < 35k', ' < 35k', 
-                                                                ' < 35k', '35-< 75k', '35-< 75k', '35-< 75k', '35-< 75k', ' >= 75k', ' < 35k', 
-                                                                ' >= 75k', ' >= 75k' ), exclude = c( 12, 77, 99 ) ) ) %>%
-  mutate( HHIncome = factor( ifelse( HHIncome %in% c( ' > 20k', 'NA' ), NA, as.character( HHIncome ) ) ) ) %>%
+  mutate( HHIncome = factor( HHIncome, levels = c( 1:15, 77, 99 ), labels = c( " < 35k", " < 35k", " < 35k", " < 35k", " < 35k", 
+                                                                " < 35k", "35-< 75k", "35-< 75k", "35-< 75k", "35-< 75k", " >= 75k", " < 35k", 
+                                                                " >= 75k", " >= 75k" ), exclude = c( 12, 77, 99 ) ) ) %>%
+  mutate( HHIncome = factor( ifelse( HHIncome %in% c( " > 20k", "NA" ), NA, as.character( HHIncome ) ) ) ) %>%
   mutate( fipr = factor( ifelse( INDFMPIR < 1.3, 1, 
                             ifelse( INDFMPIR >= 1.3, 0, NA ) ) ) ) %>%
-  mutate( Education = factor( Education, levels = c( 1, 2, 3, 4, 5, 7, 9 ), labels = c( ' < 9th Gr', '9th-11 Gr', 
-                                                                     'HSchool Diploma/GED', 
-                                                                     'Some college/associates', 
-                                                                     'College Grad/above' ), 
+  mutate( Education = factor( Education, levels = c( 1, 2, 3, 4, 5, 7, 9 ), labels = c( " < 9th Gr", "9th-11 Gr", 
+                                                                     "HSchool Diploma/GED", 
+                                                                     "Some college/associates", 
+                                                                     "College Grad/above" ), 
                                                                      exclude = c( 7, 9 ) ) ) %>%
-  mutate( Education_bin = factor( ifelse( Education %in% c( ' < 9th Gr', '9th-11 Gr', 'HSchool Diploma/GED' ), ' <= HS', 
-                                  ifelse( Education %in% c( 'Some college/associates', 'College Grad/above' ), ' >= College', NA ) ) ) )
+  mutate( Education_bin = factor( ifelse( Education %in% c( " < 9th Gr", "9th-11 Gr", "HSchool Diploma/GED" ), " <= HS", 
+                                  ifelse( Education %in% c( "Some college/associates", "College Grad/above" ), " >= College", NA ) ) ) )
   
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
+### BMI Data ###
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------
+bmidat99 <- nhanes_load_data( "BMX", "1999-2000", demographics = FALSE )
+bmidat01 <- nhanes_load_data( "BMX", "2001-2002", demographics = FALSE )
+bmidat03 <- nhanes_load_data( "BMX", "2003-2004", demographics = FALSE )
+bmidat05 <- nhanes_load_data( "BMX", "2005-2006", demographics = FALSE )
+bmidat07 <- nhanes_load_data( "BMX", "2007-2008", demographics = FALSE )
+bmidat09 <- nhanes_load_data( "BMX", "2009-2010", demographics = FALSE )
+bmidat11 <- nhanes_load_data( "BMX", "2011-2012", demographics = FALSE )
+bmidat13 <- nhanes_load_data( "BMX", "2013-2014", demographics = FALSE )
+bmidat15 <- read_xpt( file = "https://wwwn.cdc.gov/Nchs/Nhanes/2015-2016/BMX_I.XPT" )
+bmidat17 <- read_xpt( file = "https://wwwn.cdc.gov/Nchs/Nhanes/2017-2018/BMX_J.XPT" )
 
-# BMI DATA
-bmidat99 <- nhanes_load_data( 'BMX', '1999-2000', demographics = FALSE )
-bmidat01 <- nhanes_load_data( 'BMX', '2001-2002', demographics = FALSE )
-bmidat03 <- nhanes_load_data( 'BMX', '2003-2004', demographics = FALSE )
-bmidat05 <- nhanes_load_data( 'BMX', '2005-2006', demographics = FALSE )
-bmidat07 <- nhanes_load_data( 'BMX', '2007-2008', demographics = FALSE )
-bmidat09 <- nhanes_load_data( 'BMX', '2009-2010', demographics = FALSE )
-bmidat11 <- nhanes_load_data( 'BMX', '2011-2012', demographics = FALSE )
-bmidat13 <- nhanes_load_data( 'BMX', '2013-2014', demographics = FALSE )
-bmidat15 <- read_xpt( file = 'https://wwwn.cdc.gov/Nchs/Nhanes/2015-2016/BMX_I.XPT' )
-bmidat17 <- read_xpt( file = 'https://wwwn.cdc.gov/Nchs/Nhanes/2017-2018/BMX_J.XPT' )
-
-bmiall <- rbind( bmidat99[ , c( 'SEQN', 'BMXBMI' ) ], bmidat01[ , c( 'SEQN', 'BMXBMI' ) ], bmidat03[ , c( 'SEQN', 'BMXBMI' ) ], bmidat05[ , c( 'SEQN', 'BMXBMI' ) ], 
-              bmidat07[ , c( 'SEQN', 'BMXBMI' ) ], bmidat09[ , c( 'SEQN', 'BMXBMI' ) ], bmidat11[ , c( 'SEQN', 'BMXBMI' ) ], 
-              bmidat13[ , c( 'SEQN', 'BMXBMI' ) ], bmidat15[ , c( 'SEQN', 'BMXBMI' ) ], bmidat17[ , c( 'SEQN', 'BMXBMI' ) ] )
-
+bmiall <- rbind( bmidat99[ , c( "SEQN", "BMXBMI" ) ], bmidat01[ , c( "SEQN", "BMXBMI" ) ], bmidat03[ , c( "SEQN", "BMXBMI" ) ], bmidat05[ , c( "SEQN", "BMXBMI" ) ], 
+              bmidat07[ , c( "SEQN", "BMXBMI" ) ], bmidat09[ , c( "SEQN", "BMXBMI" ) ], bmidat11[ , c( "SEQN", "BMXBMI" ) ], 
+              bmidat13[ , c( "SEQN", "BMXBMI" ) ], bmidat15[ , c( "SEQN", "BMXBMI" ) ], bmidat17[ , c( "SEQN", "BMXBMI" ) ] )
 
 sum( is.na( bmiall$BMXBMI ) )
 
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
-# NUTRIENT INTAKES ESTIMATED FROM 24 HR RECALLS
 
-nutrdat99 <- nhanes_load_data( 'DRXTOT', '1999-2000', demographics = FALSE )
-nutrdat01 <- nhanes_load_data( 'DRXTOT', '2001-2002', demographics = FALSE )
-nutrdat03d1 <- nhanes_load_data( 'DR1TOT', '2003-2004', demographics = FALSE )
-nutrdat03d2 <- nhanes_load_data( 'DR2TOT', '2003-2004', demographics = FALSE )
-nutrdat05d1 <- nhanes_load_data( 'DR1TOT', '2005-2006', demographics = FALSE )
-nutrdat05d2 <- nhanes_load_data( 'DR2TOT', '2005-2006', demographics = FALSE )
-nutrdat07d1 <- nhanes_load_data( 'DR1TOT', '2007-2008', demographics = FALSE )
-nutrdat07d2 <- nhanes_load_data( 'DR2TOT', '2007-2008', demographics = FALSE )
-nutrdat09d1 <- nhanes_load_data( 'DR1TOT', '2009-2010', demographics = FALSE )
-nutrdat09d2 <- nhanes_load_data( 'DR2TOT', '2009-2010', demographics = FALSE )
-nutrdat11d1 <- nhanes_load_data( 'DR1TOT', '2011-2012', demographics = FALSE )
-nutrdat11d2 <- nhanes_load_data( 'DR2TOT', '2011-2012', demographics = FALSE )
-nutrdat13d1 <- nhanes_load_data( 'DR1TOT', '2013-2014', demographics = FALSE )
-nutrdat13d2 <- nhanes_load_data( 'DR2TOT', '2013-2014', demographics = FALSE )
-nutrdat15d1 <- read_xpt( file = 'https://wwwn.cdc.gov/Nchs/Nhanes/2015-2016/DR1TOT_I.XPT' )
-nutrdat15d2 <- read_xpt( file = 'https://wwwn.cdc.gov/Nchs/Nhanes/2015-2016/DR2TOT_I.XPT' )
-nutrdat17d1 <- read_xpt( file = 'https://wwwn.cdc.gov/Nchs/Nhanes/2017-2018/DR1TOT_J.XPT' )
-nutrdat17d2 <- read_xpt( file = 'https://wwwn.cdc.gov/Nchs/Nhanes/2017-2018/DR2TOT_J.XPT' )
 
-nutr9901 <- rbind( nutrdat99[ c( "SEQN", 'WTDRD1', "DRXTKCAL", "DRXTCARB", "DRXTPROT", "DRXTTFAT", "DRXTSFAT", 
-                            "DRXTMFAT", "DRXTPFAT", "DRXTCHOL", "DRXTFIBE", 'DRXTALCO', 'DRXTVC', 'DRXTZINC', 'DRXTMAGN', 'DRXTVB1', 'DRXTVB2', 'DRXTFOLA', 'DRXTNIAC', 
-                            'DRXTVB6', 'DRXTSELE', 'DRXTCALC', 'DRXTIRON', 'DRDTSODI', 'WTDR4YR' ) ], nutrdat01[ c( "SEQN", "DRXTKCAL", "DRXTPROT", "DRXTCARB", "DRXTTFAT", "DRXTSFAT", 
-                                                                                                 "DRXTMFAT", "DRXTPFAT", "DRXTCHOL", "DRXTFIBE", 'DRXTALCO', 'DRXTVC', 
-                                                                                                 'DRXTZINC', 'DRXTMAGN', 'DRXTVB1', 'DRXTVB2', 'DRXTFOLA', 'DRXTNIAC', 
-                                                                                                 'DRXTVB6', 'DRXTSELE', 'DRXTCALC', 'DRXTIRON', 'DRDTSODI', 'WTDRD1', 'WTDR4YR' ) ] )
+
+### 24-Hr Recall/Nutrient Intake Data ###
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------
+
+nutrdat99 <- nhanes_load_data( "DRXTOT", "1999-2000", demographics = FALSE )
+nutrdat01 <- nhanes_load_data( "DRXTOT", "2001-2002", demographics = FALSE )
+nutrdat03d1 <- nhanes_load_data( "DR1TOT", "2003-2004", demographics = FALSE )
+nutrdat03d2 <- nhanes_load_data( "DR2TOT", "2003-2004", demographics = FALSE )
+nutrdat05d1 <- nhanes_load_data( "DR1TOT", "2005-2006", demographics = FALSE )
+nutrdat05d2 <- nhanes_load_data( "DR2TOT", "2005-2006", demographics = FALSE )
+nutrdat07d1 <- nhanes_load_data( "DR1TOT", "2007-2008", demographics = FALSE )
+nutrdat07d2 <- nhanes_load_data( "DR2TOT", "2007-2008", demographics = FALSE )
+nutrdat09d1 <- nhanes_load_data( "DR1TOT", "2009-2010", demographics = FALSE )
+nutrdat09d2 <- nhanes_load_data( "DR2TOT", "2009-2010", demographics = FALSE )
+nutrdat11d1 <- nhanes_load_data( "DR1TOT", "2011-2012", demographics = FALSE )
+nutrdat11d2 <- nhanes_load_data( "DR2TOT", "2011-2012", demographics = FALSE )
+nutrdat13d1 <- nhanes_load_data( "DR1TOT", "2013-2014", demographics = FALSE )
+nutrdat13d2 <- nhanes_load_data( "DR2TOT", "2013-2014", demographics = FALSE )
+nutrdat15d1 <- read_xpt( file = "https://wwwn.cdc.gov/Nchs/Nhanes/2015-2016/DR1TOT_I.XPT" )
+nutrdat15d2 <- read_xpt( file = "https://wwwn.cdc.gov/Nchs/Nhanes/2015-2016/DR2TOT_I.XPT" )
+nutrdat17d1 <- read_xpt( file = "https://wwwn.cdc.gov/Nchs/Nhanes/2017-2018/DR1TOT_J.XPT" )
+nutrdat17d2 <- read_xpt( file = "https://wwwn.cdc.gov/Nchs/Nhanes/2017-2018/DR2TOT_J.XPT" )
+
+# keep variables of interest
+nutr9901 <- rbind( nutrdat99[ c( "SEQN", "WTDRD1", "DRXTKCAL", "DRXTCARB", "DRXTPROT", "DRXTTFAT", "DRXTSFAT", 
+                            "DRXTMFAT", "DRXTPFAT", "DRXTCHOL", "DRXTFIBE", "DRXTALCO", "DRXTVC", "DRXTZINC", "DRXTMAGN", "DRXTVB1", "DRXTVB2", "DRXTFOLA", "DRXTNIAC", 
+                            "DRXTVB6", "DRXTSELE", "DRXTCALC", "DRXTIRON", "DRDTSODI", "WTDR4YR" ) ], nutrdat01[ c( "SEQN", "DRXTKCAL", "DRXTPROT", "DRXTCARB", "DRXTTFAT", "DRXTSFAT", 
+                                                                                                 "DRXTMFAT", "DRXTPFAT", "DRXTCHOL", "DRXTFIBE", "DRXTALCO", "DRXTVC", 
+                                                                                                 "DRXTZINC", "DRXTMAGN", "DRXTVB1", "DRXTVB2", "DRXTFOLA", "DRXTNIAC", 
+                                                                                                 "DRXTVB6", "DRXTSELE", "DRXTCALC", "DRXTIRON", "DRDTSODI", "WTDRD1", "WTDR4YR" ) ] )
 
 
 names( nutrdat03d1 )
 nutr9901 <- nutr9901 %>%
-  mutate( `PMUFA:SFA` = ( DRXTMFAT + DRXTPFAT )/DRXTSFAT ) %>%
+  mutate( `PMUFA:SFA` = ( DRXTMFAT + DRXTPFAT )/DRXTSFAT ) %>% # create PMUFA:SFA variable
   mutate( WTDR2D = NA ) %>% # set 2nd day of 24hr recall weight to NA in order to successfully merge data
   select( SEQN, WTDRD1, WTDR2D, DRXTKCAL, DRXTPROT, DRXTCARB, DRXTTFAT, DRXTSFAT, 
          DRXTMFAT, DRXTPFAT, DRXTCHOL, DRXTFIBE, DRXTALCO, DRXTVC, DRXTZINC, DRXTMAGN, DRXTVB1, DRXTVB2, DRXTFOLA, DRXTNIAC, 
          DRXTVB6, DRXTSELE, DRXTCALC, DRXTIRON, DRDTSODI, WTDR4YR, `PMUFA:SFA` )
 
 
+## Average nutrient intakes across both days of 24-hr recalls ##
+
 # 2003-2004 nutrient
 nutrdat03 <- merge( nutrdat03d1[ c( "SEQN", "DRDINT", "DR1TKCAL", "DR1TPROT", "DR1TCARB", "DR1TTFAT", "DR1TSFAT", 
-                               "DR1TMFAT", "DR1TPFAT", "DR1TCHOL", "DR1TFIBE", 'DR1TALCO', 'DR1TVC', 'DR1TZINC', 'DR1TMAGN', 
-                               'DR1TVB1', 'DR1TVB2', 'DR1TFOLA', 'DR1TNIAC', 'DR1TVB6', 'DR1TSELE', 'DR1TCALC', 'DR1TIRON', 'DR1TCALC', 'DR1TIRON', 'DR1TSODI', 'WTDRD1', 'WTDR2D' ) ], 
+                               "DR1TMFAT", "DR1TPFAT", "DR1TCHOL", "DR1TFIBE", "DR1TALCO", "DR1TVC", "DR1TZINC", "DR1TMAGN", 
+                               "DR1TVB1", "DR1TVB2", "DR1TFOLA", "DR1TNIAC", "DR1TVB6", "DR1TSELE", "DR1TCALC", "DR1TIRON", "DR1TCALC", "DR1TIRON", "DR1TSODI", "WTDRD1", "WTDR2D" ) ], 
                  nutrdat03d2[ c( "SEQN", "DRDINT", "DR2TKCAL", "DR2TPROT", "DR2TCARB", "DR2TTFAT", "DR2TSFAT", 
-                               "DR2TMFAT", "DR2TPFAT", "DR2TCHOL", "DR2TFIBE", 'DR2TALCO', 'DR2TVC', 'DR2TZINC', 'DR2TMAGN', 
-                               'DR2TVB1', 'DR2TVB2', 'DR2TFOLA', 'DR2TNIAC', 'DR2TVB6', 'DR2TSELE', 'DR2TCALC', 'DR2TIRON', 'DR2TCALC', 'DR2TIRON', 'DR2TSODI', 'WTDR2D' ) ] )
+                               "DR2TMFAT", "DR2TPFAT", "DR2TCHOL", "DR2TFIBE", "DR2TALCO", "DR2TVC", "DR2TZINC", "DR2TMAGN", 
+                               "DR2TVB1", "DR2TVB2", "DR2TFOLA", "DR2TNIAC", "DR2TVB6", "DR2TSELE", "DR2TCALC", "DR2TIRON", "DR2TCALC", "DR2TIRON", "DR2TSODI", "WTDR2D" ) ] )
 nutrdat03 <- nutrdat03 %>%
   mutate( KCAL = ifelse( DRDINT == 2, ( DR1TKCAL + DR2TKCAL )/2, 
                      ifelse( DRDINT == 1 & is.na( DR1TKCAL ) == FALSE, DR1TKCAL, 
@@ -618,11 +661,11 @@ nutrdat03 <- nutrdat03 %>%
 
 # 2005-2006 nutrient
 nutrdat05 <- merge( nutrdat05d1[ c( "SEQN", "DRDINT", "DR1TKCAL", "DR1TPROT", "DR1TCARB", "DR1TTFAT", "DR1TSFAT", 
-                               "DR1TMFAT", "DR1TPFAT", "DR1TCHOL", "DR1TFIBE", 'DR1TALCO', 'DR1TVC', 'DR1TZINC', 'DR1TMAGN', 
-                               'DR1TVB1', 'DR1TVB2', 'DR1TFOLA', 'DR1TNIAC', 'DR1TVB6', 'DR1TSELE', 'DR1TCALC', 'DR1TIRON', 'DR1TSODI', 'WTDRD1', 'WTDR2D' ) ], 
+                               "DR1TMFAT", "DR1TPFAT", "DR1TCHOL", "DR1TFIBE", "DR1TALCO", "DR1TVC", "DR1TZINC", "DR1TMAGN", 
+                               "DR1TVB1", "DR1TVB2", "DR1TFOLA", "DR1TNIAC", "DR1TVB6", "DR1TSELE", "DR1TCALC", "DR1TIRON", "DR1TSODI", "WTDRD1", "WTDR2D" ) ], 
                  nutrdat05d2[ c( "SEQN", "DRDINT", "DR2TKCAL", "DR2TPROT", "DR2TCARB", "DR2TTFAT", "DR2TSFAT", 
-                               "DR2TMFAT", "DR2TPFAT", "DR2TCHOL", "DR2TFIBE", 'DR2TALCO', 'DR2TVC', 'DR2TZINC', 'DR2TMAGN', 
-                               'DR2TVB1', 'DR2TVB2', 'DR2TFOLA', 'DR2TNIAC', 'DR2TVB6', 'DR2TSELE', 'DR2TCALC', 'DR2TIRON', 'DR2TSODI', 'WTDR2D' ) ] )
+                               "DR2TMFAT", "DR2TPFAT", "DR2TCHOL", "DR2TFIBE", "DR2TALCO", "DR2TVC", "DR2TZINC", "DR2TMAGN", 
+                               "DR2TVB1", "DR2TVB2", "DR2TFOLA", "DR2TNIAC", "DR2TVB6", "DR2TSELE", "DR2TCALC", "DR2TIRON", "DR2TSODI", "WTDR2D" ) ] )
 nutrdat05 <- nutrdat05 %>%
   mutate( KCAL = ifelse( DRDINT == 2, ( DR1TKCAL + DR2TKCAL )/2, 
                      ifelse( DRDINT == 1 & is.na( DR1TKCAL ) == FALSE, DR1TKCAL, 
@@ -697,11 +740,11 @@ nutrdat05 <- nutrdat05 %>%
 
 # 2007-2008 nutrient
 nutrdat07 <- merge( nutrdat07d1[ c( "SEQN", "DRDINT", "DR1TKCAL", "DR1TPROT", "DR1TCARB", "DR1TTFAT", "DR1TSFAT", 
-                               "DR1TMFAT", "DR1TPFAT", "DR1TCHOL", "DR1TFIBE", 'DR1TALCO', 'DR1TVC', 'DR1TZINC', 'DR1TMAGN', 
-                               'DR1TVB1', 'DR1TVB2', 'DR1TFOLA', 'DR1TNIAC', 'DR1TVB6', 'DR1TSELE', 'DR1TCALC', 'DR1TIRON', 'DR1TSODI', 'WTDRD1', 'WTDR2D' ) ], 
+                               "DR1TMFAT", "DR1TPFAT", "DR1TCHOL", "DR1TFIBE", "DR1TALCO", "DR1TVC", "DR1TZINC", "DR1TMAGN", 
+                               "DR1TVB1", "DR1TVB2", "DR1TFOLA", "DR1TNIAC", "DR1TVB6", "DR1TSELE", "DR1TCALC", "DR1TIRON", "DR1TSODI", "WTDRD1", "WTDR2D" ) ], 
                  nutrdat07d2[ c( "SEQN", "DRDINT", "DR2TKCAL", "DR2TPROT", "DR2TCARB", "DR2TTFAT", "DR2TSFAT", 
-                               "DR2TMFAT", "DR2TPFAT", "DR2TCHOL", "DR2TFIBE", 'DR2TALCO', 'DR2TVC', 'DR2TZINC', 'DR2TMAGN', 
-                               'DR2TVB1', 'DR2TVB2', 'DR2TFOLA', 'DR2TNIAC', 'DR2TVB6', 'DR2TSELE', 'DR2TCALC', 'DR2TIRON', 'DR2TSODI', 'WTDR2D' ) ] )
+                               "DR2TMFAT", "DR2TPFAT", "DR2TCHOL", "DR2TFIBE", "DR2TALCO", "DR2TVC", "DR2TZINC", "DR2TMAGN", 
+                               "DR2TVB1", "DR2TVB2", "DR2TFOLA", "DR2TNIAC", "DR2TVB6", "DR2TSELE", "DR2TCALC", "DR2TIRON", "DR2TSODI", "WTDR2D" ) ] )
 nutrdat07 <- nutrdat07 %>%
   mutate( KCAL = ifelse( DRDINT == 2, ( DR1TKCAL + DR2TKCAL )/2, 
                      ifelse( DRDINT == 1 & is.na( DR1TKCAL ) == FALSE, DR1TKCAL, 
@@ -777,11 +820,11 @@ nutrdat07 <- nutrdat07 %>%
 
 # 2009-2010 nutrient
 nutrdat09 <- merge( nutrdat09d1[ c( "SEQN", "DRDINT", "DR1TKCAL", "DR1TPROT", "DR1TCARB", "DR1TTFAT", "DR1TSFAT", 
-                               "DR1TMFAT", "DR1TPFAT", "DR1TCHOL", "DR1TFIBE", 'DR1TALCO', 'DR1TVC', 'DR1TZINC', 'DR1TMAGN', 
-                               'DR1TVB1', 'DR1TVB2', 'DR1TFOLA', 'DR1TNIAC', 'DR1TVB6', 'DR1TSELE', 'DR1TCALC', 'DR1TIRON', 'DR1TSODI', 'WTDRD1', 'WTDR2D' ) ], 
+                               "DR1TMFAT", "DR1TPFAT", "DR1TCHOL", "DR1TFIBE", "DR1TALCO", "DR1TVC", "DR1TZINC", "DR1TMAGN", 
+                               "DR1TVB1", "DR1TVB2", "DR1TFOLA", "DR1TNIAC", "DR1TVB6", "DR1TSELE", "DR1TCALC", "DR1TIRON", "DR1TSODI", "WTDRD1", "WTDR2D" ) ], 
                  nutrdat09d2[ c( "SEQN", "DRDINT", "DR2TKCAL", "DR2TPROT", "DR2TCARB", "DR2TTFAT", "DR2TSFAT", 
-                               "DR2TMFAT", "DR2TPFAT", "DR2TCHOL", "DR2TFIBE", 'DR2TALCO', 'DR2TVC', 'DR2TZINC', 'DR2TMAGN', 
-                               'DR2TVB1', 'DR2TVB2', 'DR2TFOLA', 'DR2TNIAC', 'DR2TVB6', 'DR2TSELE', 'DR2TCALC', 'DR2TIRON', 'DR2TSODI', 'WTDR2D' ) ] )
+                               "DR2TMFAT", "DR2TPFAT", "DR2TCHOL", "DR2TFIBE", "DR2TALCO", "DR2TVC", "DR2TZINC", "DR2TMAGN", 
+                               "DR2TVB1", "DR2TVB2", "DR2TFOLA", "DR2TNIAC", "DR2TVB6", "DR2TSELE", "DR2TCALC", "DR2TIRON", "DR2TSODI", "WTDR2D" ) ] )
 nutrdat09 <- nutrdat09 %>%
   mutate( KCAL = ifelse( DRDINT == 2, ( DR1TKCAL + DR2TKCAL )/2, 
                      ifelse( DRDINT == 1 & is.na( DR1TKCAL ) == FALSE, DR1TKCAL, 
@@ -857,11 +900,11 @@ nutrdat09 <- nutrdat09 %>%
 
 # 2011-2012 nutrient
 nutrdat11 <- merge( nutrdat11d1[ c( "SEQN", "DRDINT", "DR1TKCAL", "DR1TPROT", "DR1TCARB", "DR1TTFAT", "DR1TSFAT", 
-                               "DR1TMFAT", "DR1TPFAT", "DR1TCHOL", "DR1TFIBE", 'DR1TALCO', 'DR1TVC', 'DR1TZINC', 'DR1TMAGN', 
-                               'DR1TVB1', 'DR1TVB2', 'DR1TFOLA', 'DR1TNIAC', 'DR1TVB6', 'DR1TSELE', 'DR1TCALC', 'DR1TIRON', 'DR1TSODI', 'WTDRD1', 'WTDR2D' ) ], 
+                               "DR1TMFAT", "DR1TPFAT", "DR1TCHOL", "DR1TFIBE", "DR1TALCO", "DR1TVC", "DR1TZINC", "DR1TMAGN", 
+                               "DR1TVB1", "DR1TVB2", "DR1TFOLA", "DR1TNIAC", "DR1TVB6", "DR1TSELE", "DR1TCALC", "DR1TIRON", "DR1TSODI", "WTDRD1", "WTDR2D" ) ], 
                  nutrdat11d2[ c( "SEQN", "DRDINT", "DR2TKCAL", "DR2TPROT", "DR2TCARB", "DR2TTFAT", "DR2TSFAT", 
-                               "DR2TMFAT", "DR2TPFAT", "DR2TCHOL", "DR2TFIBE", 'DR2TALCO', 'DR2TVC', 'DR2TZINC', 'DR2TMAGN', 
-                               'DR2TVB1', 'DR2TVB2', 'DR2TFOLA', 'DR2TNIAC', 'DR2TVB6', 'DR2TSELE', 'DR2TCALC', 'DR2TIRON', 'DR2TSODI', 'WTDR2D' ) ] )
+                               "DR2TMFAT", "DR2TPFAT", "DR2TCHOL", "DR2TFIBE", "DR2TALCO", "DR2TVC", "DR2TZINC", "DR2TMAGN", 
+                               "DR2TVB1", "DR2TVB2", "DR2TFOLA", "DR2TNIAC", "DR2TVB6", "DR2TSELE", "DR2TCALC", "DR2TIRON", "DR2TSODI", "WTDR2D" ) ] )
 nutrdat11 <- nutrdat11 %>%
   mutate( KCAL = ifelse( DRDINT == 2, ( DR1TKCAL + DR2TKCAL )/2, 
                      ifelse( DRDINT == 1 & is.na( DR1TKCAL ) == FALSE, DR1TKCAL, 
@@ -937,11 +980,11 @@ nutrdat11 <- nutrdat11 %>%
 
 # 2013-2014 nutrient
 nutrdat13 <- merge( nutrdat13d1[ c( "SEQN", "DRDINT", "DR1TKCAL", "DR1TPROT", "DR1TCARB", "DR1TTFAT", "DR1TSFAT", 
-                               "DR1TMFAT", "DR1TPFAT", "DR1TCHOL", "DR1TFIBE", 'DR1TALCO', 'DR1TVC', 'DR1TZINC', 'DR1TMAGN', 
-                               'DR1TVB1', 'DR1TVB2', 'DR1TFOLA', 'DR1TNIAC', 'DR1TVB6', 'DR1TSELE', 'DR1TCALC', 'DR1TIRON', 'DR1TSODI', 'WTDRD1', 'WTDR2D' ) ], 
+                               "DR1TMFAT", "DR1TPFAT", "DR1TCHOL", "DR1TFIBE", "DR1TALCO", "DR1TVC", "DR1TZINC", "DR1TMAGN", 
+                               "DR1TVB1", "DR1TVB2", "DR1TFOLA", "DR1TNIAC", "DR1TVB6", "DR1TSELE", "DR1TCALC", "DR1TIRON", "DR1TSODI", "WTDRD1", "WTDR2D" ) ], 
                  nutrdat13d2[ c( "SEQN", "DRDINT", "DR2TKCAL", "DR2TPROT", "DR2TCARB", "DR2TTFAT", "DR2TSFAT", 
-                               "DR2TMFAT", "DR2TPFAT", "DR2TCHOL", "DR2TFIBE", 'DR2TALCO', 'DR2TVC', 'DR2TZINC', 'DR2TMAGN', 
-                               'DR2TVB1', 'DR2TVB2', 'DR2TFOLA', 'DR2TNIAC', 'DR2TVB6', 'DR2TSELE', 'DR2TCALC', 'DR2TIRON', 'DR2TSODI', 'WTDR2D' ) ] )
+                               "DR2TMFAT", "DR2TPFAT", "DR2TCHOL", "DR2TFIBE", "DR2TALCO", "DR2TVC", "DR2TZINC", "DR2TMAGN", 
+                               "DR2TVB1", "DR2TVB2", "DR2TFOLA", "DR2TNIAC", "DR2TVB6", "DR2TSELE", "DR2TCALC", "DR2TIRON", "DR2TSODI", "WTDR2D" ) ] )
 nutrdat13 <- nutrdat13 %>%
   mutate( KCAL = ifelse( DRDINT == 2, ( DR1TKCAL + DR2TKCAL )/2, 
                      ifelse( DRDINT == 1 & is.na( DR1TKCAL ) == FALSE, DR1TKCAL, 
@@ -1016,11 +1059,11 @@ nutrdat13 <- nutrdat13 %>%
 
 # 2015-2016 nutrient
 nutrdat15 <- merge( nutrdat15d1[ c( "SEQN", "DRDINT", "DR1TKCAL", "DR1TPROT", "DR1TCARB", "DR1TTFAT", "DR1TSFAT", 
-                               "DR1TMFAT", "DR1TPFAT", "DR1TCHOL", "DR1TFIBE", 'DR1TALCO', 'DR1TVC', 'DR1TZINC', 'DR1TMAGN', 
-                               'DR1TVB1', 'DR1TVB2', 'DR1TFOLA', 'DR1TNIAC', 'DR1TVB6', 'DR1TSELE', 'DR1TCALC', 'DR1TIRON', 'DR1TSODI', 'WTDRD1', 'WTDR2D' ) ], 
+                               "DR1TMFAT", "DR1TPFAT", "DR1TCHOL", "DR1TFIBE", "DR1TALCO", "DR1TVC", "DR1TZINC", "DR1TMAGN", 
+                               "DR1TVB1", "DR1TVB2", "DR1TFOLA", "DR1TNIAC", "DR1TVB6", "DR1TSELE", "DR1TCALC", "DR1TIRON", "DR1TSODI", "WTDRD1", "WTDR2D" ) ], 
                  nutrdat15d2[ c( "SEQN", "DRDINT", "DR2TKCAL", "DR2TPROT", "DR2TCARB", "DR2TTFAT", "DR2TSFAT", 
-                               "DR2TMFAT", "DR2TPFAT", "DR2TCHOL", "DR2TFIBE", 'DR2TALCO', 'DR2TVC', 'DR2TZINC', 'DR2TMAGN', 
-                               'DR2TVB1', 'DR2TVB2', 'DR2TFOLA', 'DR2TNIAC', 'DR2TVB6', 'DR2TSELE', 'DR2TCALC', 'DR2TIRON', 'DR2TSODI', 'WTDR2D' ) ] )
+                               "DR2TMFAT", "DR2TPFAT", "DR2TCHOL", "DR2TFIBE", "DR2TALCO", "DR2TVC", "DR2TZINC", "DR2TMAGN", 
+                               "DR2TVB1", "DR2TVB2", "DR2TFOLA", "DR2TNIAC", "DR2TVB6", "DR2TSELE", "DR2TCALC", "DR2TIRON", "DR2TSODI", "WTDR2D" ) ] )
 nutrdat15 <- nutrdat15 %>%
   mutate( KCAL = ifelse( DRDINT == 2, ( DR1TKCAL + DR2TKCAL )/2, 
                      ifelse( DRDINT == 1 & is.na( DR1TKCAL ) == FALSE, DR1TKCAL, 
@@ -1092,13 +1135,15 @@ nutrdat15 <- nutrdat15 %>%
   mutate( WTDR4YR = NA ) %>%  ## weights for multiple cycles require 4 yr weights for years 99-01
   select( SEQN, WTDRD1, WTDR2D, KCAL, PROT, CARB, TFAT, SFAT, MFAT, PFAT, CHOL, FIBE, ALCO, VITC, 
          ZINC, MAGN, B1, B2, FOLA, B5, B6, SELE, CALC, IRON, SODIUM, WTDR4YR, `PMUFA:SFA` )
+
+
 # 2017-2018 nutrient
 nutrdat17 <- merge( nutrdat17d1[ c( "SEQN", "DRDINT", "DR1TKCAL", "DR1TPROT", "DR1TCARB", "DR1TTFAT", "DR1TSFAT", 
-                               "DR1TMFAT", "DR1TPFAT", "DR1TCHOL", "DR1TFIBE", 'DR1TALCO', 'DR1TVC', 'DR1TZINC', 'DR1TMAGN', 
-                               'DR1TVB1', 'DR1TVB2', 'DR1TFOLA', 'DR1TNIAC', 'DR1TVB6', 'DR1TSELE', 'DR1TCALC', 'DR1TIRON', 'DR1TSODI', 'WTDRD1', 'WTDR2D' ) ], 
+                               "DR1TMFAT", "DR1TPFAT", "DR1TCHOL", "DR1TFIBE", "DR1TALCO", "DR1TVC", "DR1TZINC", "DR1TMAGN", 
+                               "DR1TVB1", "DR1TVB2", "DR1TFOLA", "DR1TNIAC", "DR1TVB6", "DR1TSELE", "DR1TCALC", "DR1TIRON", "DR1TSODI", "WTDRD1", "WTDR2D" ) ], 
                  nutrdat17d2[ c( "SEQN", "DRDINT", "DR2TKCAL", "DR2TPROT", "DR2TCARB", "DR2TTFAT", "DR2TSFAT", 
-                               "DR2TMFAT", "DR2TPFAT", "DR2TCHOL", "DR2TFIBE", 'DR2TALCO', 'DR2TVC', 'DR2TZINC', 'DR2TMAGN', 
-                               'DR2TVB1', 'DR2TVB2', 'DR2TFOLA', 'DR2TNIAC', 'DR2TVB6', 'DR2TSELE', 'DR2TCALC', 'DR2TIRON', 'DR2TSODI', 'WTDR2D' ) ] )
+                               "DR2TMFAT", "DR2TPFAT", "DR2TCHOL", "DR2TFIBE", "DR2TALCO", "DR2TVC", "DR2TZINC", "DR2TMAGN", 
+                               "DR2TVB1", "DR2TVB2", "DR2TFOLA", "DR2TNIAC", "DR2TVB6", "DR2TSELE", "DR2TCALC", "DR2TIRON", "DR2TSODI", "WTDR2D" ) ] )
 nutrdat17 <- nutrdat17 %>%
   mutate( KCAL = ifelse( DRDINT == 2, ( DR1TKCAL + DR2TKCAL )/2, 
                      ifelse( DRDINT == 1 & is.na( DR1TKCAL ) == FALSE, DR1TKCAL, 
@@ -1167,83 +1212,84 @@ nutrdat17 <- nutrdat17 %>%
                        ifelse( DRDINT == 1 & is.na( DR1TSODI ) == FALSE, DR1TSODI, 
                               ifelse( DRDINT == 1 & is.na( DR2TSODI ) == FALSE, DR2TSODI, NA ) ) ) ) %>%
   mutate( `PMUFA:SFA` = ( MFAT + PFAT )/SFAT ) %>%
-  mutate( WTDR4YR = NA ) %>%  ## weights for multiple cycles require 4 yr weights for years 99-01
+  mutate( WTDR4YR = NA ) %>%  # weights for multiple cycles require 4 yr weights for years 99-01
   select( SEQN, WTDRD1, WTDR2D, KCAL, PROT, CARB, TFAT, SFAT, MFAT, PFAT, CHOL, FIBE, ALCO, VITC, 
          ZINC, MAGN, B1, B2, FOLA, B5, B6, SELE, CALC, IRON, SODIUM, WTDR4YR, `PMUFA:SFA` )
 
 # merge nutrient data
 colnames( nutr9901 ) <- colnames( nutrdat03 )
 
+# bind data
 nutrall <- rbind( nutr9901, nutrdat03, nutrdat05, nutrdat07, nutrdat09, nutrdat11, nutrdat13, nutrdat15, nutrdat17 )
-length( unique( nutrall$SEQN ) )
+length( unique( nutrall$SEQN ) ) # check unique IDs
 nrow( nutrall )
 nutrall <- nutrall[ unique( nutrall$SEQN ), ]
 
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
-###### CHARLSON COMORBIDITY SCORE ( CCI ) #######
+
+
+### Charlson Comorbidity Index Score ###
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
 # Diabetes questionnaire
-diqdat99 <- nhanes_load_data( 'DIQ', '1999-2000', demographics = FALSE )
-diqdat01 <- nhanes_load_data( 'DIQ', '2001-2002', demographics = FALSE )
-diqdat03 <- nhanes_load_data( 'DIQ', '2003-2004', demographics = FALSE )
-diqdat05 <- nhanes_load_data( 'DIQ', '2005-2006', demographics = FALSE )
-diqdat07 <- nhanes_load_data( 'DIQ', '2007-2008', demographics = FALSE )
-diqdat09 <- nhanes_load_data( 'DIQ', '2009-2010', demographics = FALSE )
-diqdat11 <- nhanes_load_data( 'DIQ', '2011-2012', demographics = FALSE )
-diqdat13 <- nhanes_load_data( 'DIQ', '2013-2014', demographics = FALSE )
-diqdat15 <- read_xpt( file = 'https://wwwn.cdc.gov/Nchs/Nhanes/2015-2016/DIQ_I.XPT' )
-diqdat17 <- read_xpt( file = 'https://wwwn.cdc.gov/Nchs/Nhanes/2017-2018/DIQ_J.XPT' )
+diqdat99 <- nhanes_load_data( "DIQ", "1999-2000", demographics = FALSE )
+diqdat01 <- nhanes_load_data( "DIQ", "2001-2002", demographics = FALSE )
+diqdat03 <- nhanes_load_data( "DIQ", "2003-2004", demographics = FALSE )
+diqdat05 <- nhanes_load_data( "DIQ", "2005-2006", demographics = FALSE )
+diqdat07 <- nhanes_load_data( "DIQ", "2007-2008", demographics = FALSE )
+diqdat09 <- nhanes_load_data( "DIQ", "2009-2010", demographics = FALSE )
+diqdat11 <- nhanes_load_data( "DIQ", "2011-2012", demographics = FALSE )
+diqdat13 <- nhanes_load_data( "DIQ", "2013-2014", demographics = FALSE )
+diqdat15 <- read_xpt( file = "https://wwwn.cdc.gov/Nchs/Nhanes/2015-2016/DIQ_I.XPT" )
+diqdat17 <- read_xpt( file = "https://wwwn.cdc.gov/Nchs/Nhanes/2017-2018/DIQ_J.XPT" )
 
 # Kidney conditions questionnaire
-kiqdat99 <- nhanes_load_data( 'KIQ', '1999-2000', demographics = FALSE )
-kiqdat01 <- nhanes_load_data( 'KIQ_U_B', '2001-2002', demographics = FALSE )
-kiqdat03 <- nhanes_load_data( 'KIQ_U_C', '2003-2004', demographics = FALSE )
-kiqdat05 <- nhanes_load_data( 'KIQ_U_D', '2005-2006', demographics = FALSE )
-kiqdat07 <- nhanes_load_data( 'KIQ_U_E', '2007-2008', demographics = FALSE )
-kiqdat09 <- nhanes_load_data( 'KIQ_U_F', '2009-2010', demographics = FALSE )
-kiqdat11 <- nhanes_load_data( 'KIQ_U_G', '2011-2012', demographics = FALSE )
-kiqdat13 <- nhanes_load_data( 'KIQ_U_H', '2013-2014', demographics = FALSE )
-kiqdat15 <- read_xpt( file = 'https://wwwn.cdc.gov/Nchs/Nhanes/2015-2016/KIQ_U_I.XPT' )
-kiqdat17 <- read_xpt( file = 'https://wwwn.cdc.gov/Nchs/Nhanes/2017-2018/KIQ_U_J.XPT' )
+kiqdat99 <- nhanes_load_data( "KIQ", "1999-2000", demographics = FALSE )
+kiqdat01 <- nhanes_load_data( "KIQ_U_B", "2001-2002", demographics = FALSE )
+kiqdat03 <- nhanes_load_data( "KIQ_U_C", "2003-2004", demographics = FALSE )
+kiqdat05 <- nhanes_load_data( "KIQ_U_D", "2005-2006", demographics = FALSE )
+kiqdat07 <- nhanes_load_data( "KIQ_U_E", "2007-2008", demographics = FALSE )
+kiqdat09 <- nhanes_load_data( "KIQ_U_F", "2009-2010", demographics = FALSE )
+kiqdat11 <- nhanes_load_data( "KIQ_U_G", "2011-2012", demographics = FALSE )
+kiqdat13 <- nhanes_load_data( "KIQ_U_H", "2013-2014", demographics = FALSE )
+kiqdat15 <- read_xpt( file = "https://wwwn.cdc.gov/Nchs/Nhanes/2015-2016/KIQ_U_I.XPT" )
+kiqdat17 <- read_xpt( file = "https://wwwn.cdc.gov/Nchs/Nhanes/2017-2018/KIQ_U_J.XPT" )
 
 
-diqdat <- rbind( diqdat99[ , c( 'SEQN', 'DIQ010', 'DIQ080' ) ], 
-              diqdat01[ , c( 'SEQN', 'DIQ010', 'DIQ080' ) ], 
-              diqdat03[ , c( 'SEQN', 'DIQ010', 'DIQ080' ) ], 
-              diqdat05[ , c( 'SEQN', 'DIQ010', 'DIQ080' ) ], 
-              diqdat07[ , c( 'SEQN', 'DIQ010', 'DIQ080' ) ], 
-              diqdat09[ , c( 'SEQN', 'DIQ010', 'DIQ080' ) ], 
-              diqdat11[ , c( 'SEQN', 'DIQ010', 'DIQ080' ) ], 
-              diqdat13[ , c( 'SEQN', 'DIQ010', 'DIQ080' ) ], 
-              diqdat15[ , c( 'SEQN', 'DIQ010', 'DIQ080' ) ], 
-              diqdat17[ , c( 'SEQN', 'DIQ010', 'DIQ080' ) ] ) # diabetes and retinopathy
+diqdat <- rbind( diqdat99[ , c( "SEQN", "DIQ010", "DIQ080" ) ], 
+              diqdat01[ , c( "SEQN", "DIQ010", "DIQ080" ) ], 
+              diqdat03[ , c( "SEQN", "DIQ010", "DIQ080" ) ], 
+              diqdat05[ , c( "SEQN", "DIQ010", "DIQ080" ) ], 
+              diqdat07[ , c( "SEQN", "DIQ010", "DIQ080" ) ], 
+              diqdat09[ , c( "SEQN", "DIQ010", "DIQ080" ) ], 
+              diqdat11[ , c( "SEQN", "DIQ010", "DIQ080" ) ], 
+              diqdat13[ , c( "SEQN", "DIQ010", "DIQ080" ) ], 
+              diqdat15[ , c( "SEQN", "DIQ010", "DIQ080" ) ], 
+              diqdat17[ , c( "SEQN", "DIQ010", "DIQ080" ) ] ) # diabetes and retinopathy
 
 
 kiqdat99 <- kiqdat99 %>%
   rename( KIQ022 = KIQ020 )
 
-kiqdat <- rbind( kiqdat99[ , c( 'SEQN', 'KIQ022' ) ], 
-              kiqdat01[ , c( 'SEQN', 'KIQ022' ) ], 
-              kiqdat03[ , c( 'SEQN', 'KIQ022' ) ], 
-              kiqdat05[ , c( 'SEQN', 'KIQ022' ) ], 
-              kiqdat07[ , c( 'SEQN', 'KIQ022' ) ], 
-              kiqdat09[ , c( 'SEQN', 'KIQ022' ) ], 
-              kiqdat11[ , c( 'SEQN', 'KIQ022' ) ], 
-              kiqdat13[ , c( 'SEQN', 'KIQ022' ) ], 
-              kiqdat15[ , c( 'SEQN', 'KIQ022' ) ], 
-              kiqdat17[ , c( 'SEQN', 'KIQ022' ) ] ) # kidney failure
-
-
-
-
+kiqdat <- rbind( kiqdat99[ , c( "SEQN", "KIQ022" ) ], 
+              kiqdat01[ , c( "SEQN", "KIQ022" ) ], 
+              kiqdat03[ , c( "SEQN", "KIQ022" ) ], 
+              kiqdat05[ , c( "SEQN", "KIQ022" ) ], 
+              kiqdat07[ , c( "SEQN", "KIQ022" ) ], 
+              kiqdat09[ , c( "SEQN", "KIQ022" ) ], 
+              kiqdat11[ , c( "SEQN", "KIQ022" ) ], 
+              kiqdat13[ , c( "SEQN", "KIQ022" ) ], 
+              kiqdat15[ , c( "SEQN", "KIQ022" ) ], 
+              kiqdat17[ , c( "SEQN", "KIQ022" ) ] ) # kidney failure
 
 
 # Cancer data
-cadata <- mcqall.bcd[ , c( 'SEQN', 'CATYPEA', 'CATYPEB', 'CATYPEC' ) ] ### fix here
+cadata <- mcqall.bcd[ , c( "SEQN", "CATYPEA", "CATYPEB", "CATYPEC" ) ] 
 
 # merge data together and create flag variables
-cci_dat <- left_join( diqdat, kiqdat, by = 'SEQN' ) %>%
-  left_join( ., mcqall, by = 'SEQN' ) %>%
+cci_dat <- left_join( diqdat, kiqdat, by = "SEQN" ) %>%
+  left_join( ., mcqall, by = "SEQN" ) %>%
   mutate( diab_flag = ifelse( DIQ010 == 1, 1, 
                           ifelse( DIQ010 == 2, 0, 
                                  ifelse( DIQ010 == 3, 0, NA ) ) ) ) %>%
@@ -1265,27 +1311,34 @@ cci_dat <- left_join( diqdat, kiqdat, by = 'SEQN' ) %>%
                         ifelse( MCQ220 == 1 & is.na( CATYPEA ) == F & is.na( CATYPEB ) == T & is.na( CATYPEC ) == T, 2, 
                                ifelse( MCQ220 == 1 & is.na( CATYPEA ) == F & is.na( CATYPEB ) == F & is.na( CATYPEC ) == T, 4, 
                                       ifelse( MCQ220 == 1 & is.na( CATYPEA ) == F & is.na( CATYPEB ) == F & is.na( CATYPEC ) == F, 6, NA ) ) ) ) ) %>%
+  # create final score by summing flags
   mutate( CCI_Score = diab_flag + retin_flag + kidn_flag + stroke_flag + chf_flag + liver_flag + RA_flag + CA_flag ) %>%
   select( SEQN, CCI_Score )
 
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
-###### PHYSICAL ACTIVITY DATA #######
 
-PAQdat99 <- nhanes_load_data( 'PAQIAF', '1999-2000', demographics = FALSE )
-PAQdat01 <- nhanes_load_data( 'PAQIAF', '2001-2002', demographics = FALSE )
-PAQdat03 <- nhanes_load_data( 'PAQIAF', '2003-2004', demographics = FALSE )
-PAQdat05 <- nhanes_load_data( 'PAQIAF', '2005-2006', demographics = FALSE )#### PAQ Variable
-# Change after 2005
-PAQdat07 <- nhanes_load_data( 'PAQ', '2007-2008', demographics = FALSE )
-PAQdat09 <- nhanes_load_data( 'PAQ', '2009-2010', demographics = FALSE )
-PAQdat11 <- nhanes_load_data( 'PAQ', '2011-2012', demographics = FALSE )
-PAQdat13 <- nhanes_load_data( 'PAQ', '2013-2014', demographics = FALSE )
-PAQdat15 <- read_xpt( file = 'https://wwwn.cdc.gov/Nchs/Nhanes/2015-2016/PAQ_I.XPT' )
-PAQdat17 <- read_xpt( file = 'https://wwwn.cdc.gov/Nchs/Nhanes/2017-2018/PAQ_J.XPT' )
+### Physical Activity Questionnaire ###
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------
+
+PAQdat99 <- nhanes_load_data( "PAQIAF", "1999-2000", demographics = FALSE )
+PAQdat01 <- nhanes_load_data( "PAQIAF", "2001-2002", demographics = FALSE )
+PAQdat03 <- nhanes_load_data( "PAQIAF", "2003-2004", demographics = FALSE )
+PAQdat05 <- nhanes_load_data( "PAQIAF", "2005-2006", demographics = FALSE ) # PAQ Variable
+# change after 2005
+PAQdat07 <- nhanes_load_data( "PAQ", "2007-2008", demographics = FALSE )
+PAQdat09 <- nhanes_load_data( "PAQ", "2009-2010", demographics = FALSE )
+PAQdat11 <- nhanes_load_data( "PAQ", "2011-2012", demographics = FALSE )
+PAQdat13 <- nhanes_load_data( "PAQ", "2013-2014", demographics = FALSE )
+PAQdat15 <- read_xpt( file = "https://wwwn.cdc.gov/Nchs/Nhanes/2015-2016/PAQ_I.XPT" )
+PAQdat17 <- read_xpt( file = "https://wwwn.cdc.gov/Nchs/Nhanes/2017-2018/PAQ_J.XPT" )
 
 PA9905 <- list( PAQdat99, PAQdat01, PAQdat03, PAQdat05 )
 PA0717 <- list( PAQdat07, PAQdat09, PAQdat11, PAQdat13, PAQdat15, PAQdat17 )
+
+
+## Process and merge ##
 
 # for cycles 2007-2017
 for( i in 1:length( PA0717 ) ){
@@ -1324,7 +1377,7 @@ for( i in 1:length( PA0717 ) ){
 }
 
 
-### for cycles 1999-2005
+# for cycles 1999-2005
 for( i in 1:length( PA9905 ) ){
   PA9905[[ i ]] <- PA9905[[ i ]] %>%
     mutate( MetMin30 = PADDURAT * PADMETS * PADTIMES ) %>%# met minutes in a month for a single activity
@@ -1337,11 +1390,11 @@ for( i in 1:length( PA9905 ) ){
 }
 
 
-## people with no activity in NHANES 99-05 since they are not included in the PAQIAF
-PQdat99 <- nhanes_load_data( 'PAQ', '1999-2000', demographics = FALSE )
-PQdat01 <- nhanes_load_data( 'PAQ', '2001-2002', demographics = FALSE )
-PQdat03 <- nhanes_load_data( 'PAQ', '2003-2004', demographics = FALSE )
-PQdat05 <- nhanes_load_data( 'PAQ', '2005-2006', demographics = FALSE )#### PAQ Variable
+# people reporting no activity in NHANES 99-05 (assign them 0 Weekly MET minutes)
+PQdat99 <- nhanes_load_data( "PAQ", "1999-2000", demographics = FALSE )
+PQdat01 <- nhanes_load_data( "PAQ", "2001-2002", demographics = FALSE )
+PQdat03 <- nhanes_load_data( "PAQ", "2003-2004", demographics = FALSE )
+PQdat05 <- nhanes_load_data( "PAQ", "2005-2006", demographics = FALSE )
 
 PQ9905 <- list( PQdat99, PQdat01, PQdat03, PQdat05 )
 for ( i in 1: length( PQ9905 ) ){
@@ -1351,27 +1404,29 @@ for ( i in 1: length( PQ9905 ) ){
     mutate( WeekMetMin = 0 ) # give them 0 weekly met minutes 
 }
 
+# bind PA data
+mergall.pa <- bind_rows( do.call( "rbind", PA9905 ),
+          do.call( "rbind", PQ9905 ),
+          do.call( "rbind", PA0717 ) )
 
-mergall.pa <- bind_rows( do.call( 'rbind', PA9905 ),
-          do.call( 'rbind', PQ9905 ),
-          do.call( 'rbind', PA0717 ) )
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
 
-##### MERGE and SAVE
+### Final Merge and Save ###
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------
+
 # merge all individual datasets together and then, finally, merge with FPED data from previous R script
-setwd( '/Volumes/My Passport for Mac/Arthur Lab/FPED Raw Data/Analysis files/GitHub Repository Files /NHANES-Diet-Penalized-Regression/Data-Wrangled' )
-
-left_join( demoall, mcqall.bcd[ ,-which( colnames( mcqall.bcd ) == 'RIDAGEYR' ) ], by = 'SEQN' ) %>%
-  left_join( ., smdall[ , c( 'SEQN', 'SmokStat' ) ], by = 'SEQN' ) %>%
-  left_join( ., alqall[ , c( 'SEQN', 'ALCUSE' ) ], by = 'SEQN' ) %>%
-  left_join( ., fsdall[ , c( 'SEQN', 'FoodSecCatHH', 'FoodSecCatAD', 'FoodAsstP', 
-                                 'FoodAsstPnowic', 'BinFoodSecHH', 'BinFoodSecAD' ) ], by = 'SEQN' ) %>%
+left_join( demoall, mcqall.bcd[ ,-which( colnames( mcqall.bcd ) == "RIDAGEYR" ) ], by = "SEQN" ) %>%
+  left_join( ., smdall[ , c( "SEQN", "SmokStat" ) ], by = "SEQN" ) %>%
+  left_join( ., alqall[ , c( "SEQN", "ALCUSE" ) ], by = "SEQN" ) %>%
+  left_join( ., fsdall[ , c( "SEQN", "FoodSecCatHH", "FoodSecCatAD", "FoodAsstP", 
+                                 "FoodAsstPnowic", "BinFoodSecHH", "BinFoodSecAD" ) ], by = "SEQN" ) %>%
   left_join( ., bmiall, by = "SEQN" ) %>%
   left_join( ., nutrall, by = "SEQN" ) %>%
   left_join( ., cci_dat, by = "SEQN" ) %>%
   left_join( ., mergall.pa, by = "SEQN" ) %>%
-  left_join( ., readRDS( 'Data-Wrangled/01-FPED-Wrangled.rds' ), by = 'SEQN' ) %>%
+  left_join( ., readRDS( "02-Data-Wrangled/01-FPED-Wrangled.rds" ), by = "SEQN" ) %>% # read in last version of data
   # Create 18yr and 16yr weights using 2 days of dietary data ( WTDR2D weights )
   mutate( WTDR18YR = ifelse( Cycle %in% c( 1, 2 ), ( 2/10 ) * WTDR4YR,  # 1999-2017
                              ifelse( Cycle %in% c( 3:10 ), ( 8/10 ) * WTDR2D, NA ) ),
@@ -1384,17 +1439,21 @@ left_join( demoall, mcqall.bcd[ ,-which( colnames( mcqall.bcd ) == 'RIDAGEYR' ) 
           `PMUFA:SFA` = ifelse( is.na( `PMUFA:SFA` ) == TRUE & PFAT == 0
                                         & MFAT == 0 &SFAT == 0, 0, `PMUFA:SFA` ),
           # make alcohol intake categorical variable using dietary intake data
-          alc_cat = factor( ifelse( ALCO < 0.1, 'non-drinking', 
-                                            ifelse( ALCO < 28 & ALCO >= 0.1 & Gender == 'Male', 'moderate', 
-                                                    ifelse( ALCO < 14 & ALCO >= 0.1 & Gender == 'Female', 'moderate', 
-                                                            ifelse( ALCO >= 28  & Gender == 'Male', 'heavy', 
-                                                                    ifelse( ALCO >= 14  & Gender == 'Female', 'heavy', NA ) ) ) ) ) ),
+          alc_cat = factor( ifelse( ALCO < 0.1, "non-drinking", 
+                                            ifelse( ALCO < 28 & ALCO >= 0.1 & Gender == "Male", "moderate", 
+                                                    ifelse( ALCO < 14 & ALCO >= 0.1 & Gender == "Female", "moderate", 
+                                                            ifelse( ALCO >= 28  & Gender == "Male", "heavy", 
+                                                                    ifelse( ALCO >= 14  & Gender == "Female", "heavy", NA ) ) ) ) ) ),
           # Create an indicator variable for cancer and food insecure subjects
-          CAFS = ifelse( CA == 1 & BinFoodSecHH == 'Low' & Age >= 20, 1, 
+          CAFS = ifelse( CA == 1 & BinFoodSecHH == "Low" & Age >= 20, 1, 
                   ifelse( is.na( CA ) == TRUE | is.na( BinFoodSecHH ) == TRUE, NA, 
                           0 ) ) ) %>%
   # sort rows by age
    arrange( Age ) %>%
-  saveRDS( ., 'Data-Wrangled/02-Covariates-Wrangled.rds' )
+
+### Final Save ###  
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------
+  saveRDS( ., "02-Data-Wrangled/02-Covariates-Wrangled.rds" )
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
           

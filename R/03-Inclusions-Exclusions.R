@@ -1,10 +1,20 @@
 ###---------------------------------------------------
 ###   03-INCLUSIONS/EXCLUSIONS
 ###---------------------------------------------------
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------
+# 
+# In this script, we will import establish the analytical sample size and document inclusion/exclusion procedure.
+# 
+# INPUT DATA FILE: "02-Data-Wrangled/02-Covariates-Wrangled.rds
+#
+# OUTPUT FILES: "02-Data-Wrangled/03-Inclusions-Exclusions.rds" 
+#
+# Resources: 
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
 library( tidyverse )
 
-start.data <- readRDS( 'Data-Wrangled/02-Covariates-Wrangled.rds' )
+start.data <- readRDS( "02-Data-Wrangled/02-Covariates-Wrangled.rds" )
 
 ####################################################################################################
 nrow( start.data ) ######### start: 101316 observations ##############################################
@@ -21,17 +31,20 @@ nrow( start.data ) ######### start: 101316 observations ########################
 
 
 
-############## Step 1 ##############
+### Step 1 ###
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
 ## age >= 20 and response of "1" ( "yes" ) to the MCQ220 probe on cancer history ##
 ( ex.1 <- as.numeric( ( step1.data <- start.data %>%
   filter( Age >= 20 & CA == 1 ) ) %>%
   summarise( subjects.remaining = n( ) ) ) ) # 5166 subjects remain
 
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
 
-############## Step 2 ##############
+### Step 2 ###
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
 ## exclude those without complete dietary data/missing weights from the 24-hr recall subsample ##
 
@@ -49,7 +62,7 @@ ex.2a <- nrow( step2a.data )
 ## outright missing cancer diagnosis data ##
 
 ( step2b.data <- step2a.data %>%
-    filter( !( PrimaryCA == 'Non-Melanoma Skin' ) ) ) %>%
+    filter( !( PrimaryCA == "Non-Melanoma Skin" ) ) ) %>%
   summarise( subjects.remaining = n( ) , subjects.excluded = ex.2a - n( ) )
 
 # subjects.remaining subjects.excluded
@@ -73,11 +86,13 @@ ex.2b <- nrow( step2b.data )
 #               3379                 4
 
 ex.2c <- nrow( step2c.data )
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
 
 
-############## Step 3 ##############
+### Step 3 ###
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
 ## missing covariate data: food security status, SNAP benefits status, age, and household size ##
 
@@ -88,18 +103,18 @@ ex.2c <- nrow( step2c.data )
            is.na( HHSize ) == F &
            is.na( Agecat ) == F ) %>%
     mutate( Diet.ext.ind.reg = 1, # sample for penalized logit and validation
-            Diet.ext.ind.pca = ifelse( BinFoodSecHH == 'Low', 1, 0 ) ) %>% # samples for PCA
+            Diet.ext.ind.pca = ifelse( BinFoodSecHH == "Low", 1, 0 ) ) %>% # samples for PCA
     data.frame( ) ) %>%
   summarise( subjects.remaining = n( ) , subjects.excluded = ex.2c - n( ) )
 
 # subjects.remaining subjects.excluded
 #               3317                62
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
 
-####################################################################################################
-######################################## Final Sample Sizes ########################################
-####################################################################################################
+### Final Sample Sizes ###
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
 ## Sample Size for Dietary Patterns Extraction with Penalized Regression and Validation with Logistic Regression ##
 
@@ -124,4 +139,5 @@ step3.data %>%
 start.data %>%
   filter( is.na( WTDR18YR ) == F ) %>%
   full_join( ., step3.data ) %>%
-  saveRDS( ., 'Data-Wrangled/03-Inclusions-Exclusions.rds' )
+  saveRDS( ., "02-Data-Wrangled/03-Inclusions-Exclusions.rds" )
+

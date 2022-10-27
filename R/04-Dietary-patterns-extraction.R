@@ -2,6 +2,18 @@
 ###   04-DIETARY PATTERNS EXTRACTION
 ###---------------------------------------------------
 
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------
+# 
+# In this script, we will extract dietary patterns using penalized logistic regression and then principal components
+# analysis.
+# 
+# INPUT DATA FILE: "Data-Wrangled/03-Inclusions-Exclusions.rds" 
+#
+# OUTPUT FILES: "02-Data-Wrangled/03-Inclusions-Exclusions.rds" 
+#
+# Resources: 
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------
+
 library( tidyverse )
 library( survey ) # complex survey design models
 library( glmnet ) # fit penalized regression
@@ -11,7 +23,7 @@ library( weights )
 library( latex2exp) # to add LaTeX to plots
 
 
-xdata <- readRDS( "Data-Wrangled/03-Inclusions-Exclusions.rds" )
+xdata <- readRDS( "02-Data-Wrangled/03-Inclusions-Exclusions.rds" )
 
 
 # collapse red mt and organ mt to same group give very low intake of organ mts
@@ -20,10 +32,9 @@ xdata$Meat <- xdata$RedMts + xdata$OrganMts
 # copy
 x.data <- xdata
 
-####################################################################################################
-############################ Dietary Patterns Extraction: Elastic Net ##############################
-####################################################################################################
 
+### Dietary Patterns Extraction: Elastic Net ###
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
 # function
@@ -109,10 +120,10 @@ enet_pat <- function( xmat, yvec, wts, plot.title ){
 
 
 
-#### SUBSET DATA MATRIX FOR ELASTIC NET PROCEDURE
+## Subset Data for Elastic Net Procedure ##
 caonly <- x.data[ which( x.data$Diet.ext.ind.reg == 1 ), ]
 
-# set categories to numerical for glmnet model
+# set categories to numerical dummy variables for glmnet model
 
 caonly <- caonly %>%
   mutate( FoodAsstPnowic = ifelse( FoodAsstPnowic =='yes', 1,
@@ -124,7 +135,7 @@ caonly <- caonly %>%
   mutate( HHSize_bin = ifelse( HHSize>= 5, 1,
                            ifelse( HHSize<5, 0, NA ) ) )
 
-
+# food groups columns used for the procedure
 fdgrp.columns <- which( colnames( caonly ) %in% c( 'ProcessedMts', 'Meat', 'Poultry', 'Fish_Hi', 'Fish_Lo',
                                              'Eggs', 'SolidFats', 'Oils', 'Milk', 'Yogurt', 'Cheese',
                                              'Alcohol', 'FruitOther', 'F_CitMelBer', 'Tomatoes',
@@ -162,10 +173,10 @@ for ( j in fdgrp.columns ){# ensure proper variables are indicated by the column
 ##############################################################################
 
 # Save plot figure
-pdf( "Manuscript/Figures/optimal-lambdas-enet-patterns.pdf" )
+par( mfrow = c( 2, 2 ), mar = c( 3, 3, 2, 1 ) )
+png("Manuscript/Figures/optimal-lambdas-enet-patterns-v2.PNG")
 
 # Food insecurity binary outcome
-par( mfrow = c( 2, 2 ), mar = c( 3, 3, 2, 1 ) )
 mat <- na.omit( as.matrix( caonly[ , c( fdgrp.columns, fs.outcome.column, weight.column ) ] ) )
 xmat <- mat[ , 1:26 ] # food grps
 yvec <- mat[ , 27 ] # binary response
@@ -173,12 +184,13 @@ xwts <- mat[ , 28 ] / mean( mat[ , 28 ] ) # normalize weights
 
 fsoc <- enet_pat( xmat, yvec, xwts, plot.title ='Food Insecurity' ) 
 
+# add legend
 colorss <- c( "black", "red", "green3", "navyblue",   "cyan",   "magenta", "gold", "gray",
            'pink', 'brown', 'goldenrod' )
-legend( "topright", # Add legend to plot
+legend( "bottomright", 
        legend = c( paste( seq( 0, 1, by = 0.1 ) ), 'Minimizer' ), col = c( colorss, 'grey' ),
        lty = c( rep( 1, 11 ), 2 ), title = TeX( '$\\alpha$' ),
-       cex = 0.45, inset = 0, y.intersp = 0.5 )
+       cex = 0.6, inset = 0, y.intersp = 0.5 )
 
 
 # Age outcome
@@ -190,7 +202,7 @@ ageoc <- enet_pat( xmat, yvec, xwts, plot.title = 'Age' )
 
 
 
-# Reciept of food assistance outcome
+# Receipt of food assistance outcome
 mat <- na.omit( as.matrix( caonly[ , c( fdgrp.columns, fdas.outcome.column, weight.column ) ] ) )
 xmat <- mat[ , 1:26 ] # food grps
 yvec <- mat[ , 27 ] # binary response

@@ -4,10 +4,10 @@
 
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------
 # 
-# In this script, we will import and merge filed from the FPED/MPED database for the NHANES 1999-2018 cycles and also import
+# In this script, we will import and merge files from the FPED/MPED database for the NHANES 1999-2018 cycles and also import
 # and merge the data from the demographic survey (DEMO).
 # 
-# INPUT DATA FILE: raw data files from the FPED website
+# INPUT DATA FILE: raw data files from the FPED and NHANES websites
 #
 # OUTPUT FILES: "02-Data-Wrangled/01-FPED-Wrangled.rds"
 #
