@@ -2,9 +2,28 @@
 ###   05-VALIDATION: TABLES 1 AND 3
 ###---------------------------------------------------
 
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------
+# 
+# In this script, we will fit generate Table 1 (epidemiological characteristics of the study sample and 
+# Table 3 (epidemiological characteristics by high and low fractions of the diet quality indices) for the manuscript.
+# 
+# INPUT DATA FILE: "03-Data-Rodeo/04-Analytic-Data.rds"
+#
+# OUTPUT FILES: "04-Manuscript/Tables/table-1.txt", "Manuscript/Tables/table-3.txt"
+#
+# Resources: see "utils.R" for functions used to generate tables 1 and 3
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------
+
 library( tidyverse )
 library( survey )
 
+
+# read in helper functions
+source( "R/utils.R" )
+
+
+### Read in Data and Create Survey Design Objects for this Analysis ###
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
 dat  <- readRDS( "03-Data-Rodeo/04-Analytic-Data.rds" ) %>%
   dplyr::filter( is.na( WTDR18YR ) == F ) %>% # subset to those having non-missing weights 
@@ -21,12 +40,15 @@ fiw <- subset( nhc, BinFoodSecHH == "Low" & Diet.ext.ind.reg == 1 )
 fsw <- subset( nhc, BinFoodSecHH == "High" & Diet.ext.ind.reg == 1 )
 gen <- subset( nhc, Diet.ext.ind.reg == 1 )
 
-# read in helper functions
-source( "R/utils.R" )
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
-# write function to return table 1
 
-cafs.table1 <- function( design, df ){
+### Table 1 ###
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------
+
+# write function to return table 1 with specific variables
+
+cafs_table1 <- function( design, df ){
 sex <- epitab( var = "Gender", data.fr = df, des = design, table.var = "Gender" )
 alcuse <- epitab( var = "alc_cat", data.fr = df, des = design, table.var = "Alcohol Use" )
 race <- epitab( var = "Race", data.fr = df, des = design, table.var = "Race/Ethnicity" )
@@ -51,9 +73,9 @@ return( table1 )
 
 
 # generate table columns for each of the subsets described above
-fiw.tab <- cafs.table1( design = fiw, df = dat )
-fsw.tab <- cafs.table1( design = fsw, df = dat )
-gen.tab <- cafs.table1( design = gen, df = dat )
+fiw.tab <- cafs_table1( design = fiw, df = dat )
+fsw.tab <- cafs_table1( design = fsw, df = dat )
+gen.tab <- cafs_table1( design = gen, df = dat )
 
 # merge columns into table
 final.tab <- cbind( gen.tab, fiw.tab, fsw.tab )
@@ -78,6 +100,7 @@ for ( i in 1:length( chi ) ){
 tt  <- c( "Age", "BMI", "HHSize", "MET", "Calories", "CCI" )
 these.b  <- c( "Age", "BMXBMI", "HHSize", "WeekMetMin", "KCAL", "CCI_Score" ) 
 
+
 # t test
 for ( i in 1:length( tt ) ){
   final.tab[ which( str_detect( final.tab[ , 1 ], tt[i] ) ), 7 ] <- ifelse( svyttest( as.formula( paste0( these.b[i], "~BinFoodSecHH" ) ), design = gen )$p.value < 0.01, "< 0.01",
@@ -91,14 +114,15 @@ final.tab[ final.tab == "  ( )" ] <- ""
 # save
 write.table( final.tab, "04-Manuscript/Tables/table-1.txt", sep = ", ", row.names = FALSE )
 
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
 
-##############################################################################
-############ TABLE 3: TABLE OF DIETARY PATTERNS ACROSS COVARIATES ############ 
-##############################################################################
 
-## Group diet score by the median
+### Table 3 ###
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------
+
+# categorize diet variables via a median split
 
 cnames <- c( "FS_ENet", "Age_ENet", "FdAs_ENet", "HHS_ENet", "PC1", "PC2" )
 
@@ -137,7 +161,7 @@ tab3df[ tab3df == "  ( )" ] <- ""
 tab3df[ tab3df == "  ( )*" ] <- "*"
 tab3df[ tab3df == "  ( )**" ] <- "**"
 
-# further text process
+# further text process the table
 tab3df <- data.frame( tab3df )
 tab3df <- sapply( tab3df, function(x) str_replace_all( x, "(?<=\\d\\d)(\\))",".0)" ))
 
@@ -151,3 +175,5 @@ table( dat.b$HHS_ENet_Q2 )
 
 # save table
 write.table( tab3df, "Manuscript/Tables/table-3.txt", sep = ", ", row.names = FALSE )
+
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------
