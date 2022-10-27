@@ -2,18 +2,33 @@
 ###   01-FPED/MPED DATA IMPORT AND WRANGLING
 ###---------------------------------------------------
 
-# user guide: https://www.ars.usda.gov/ARSUserFiles/80400530/pdf/fped/FPED_0506.pdf
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------
+# 
+# In this script, we will import and merge filed from the FPED/MPED database for the NHANES 1999-2018 cycles and also import
+# and merge the data from the demographic survey (DEMO).
+# 
+# INPUT DATA FILE: raw data files from the FPED website
+#
+# OUTPUT FILES: "02-Data-Wrangled/01-FPED-Wrangled.rds"
+#
+# Resources: 
+# Data: https://www.ars.usda.gov/northeast-area/beltsville-md-bhnrc/beltsville-human-nutrition-research-center/food-surveys-research-group/docs/fped-overview/
+# FPED user guide: https://www.ars.usda.gov/ARSUserFiles/80400530/pdf/fped/FPED_0506.pdf
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------
+
 
 library( haven ) 
 library( tidyverse ) 
 library( RNHANES ) 
 library( glue )
 
-setwd( "Data-Raw/FPED" ) 
 
-####### CYCLES 1999-2002 (MPED 1.0)##########
+### Read-in Data and Wrangle ###
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
-dr99 <- read_sas( "Data-Raw/pyr_tot01.sas7bdat" ) 
+## CYCLES 1999-2002 (MPED 1.0) ##
+
+dr99 <- read_sas( "01-Data-Raw/FPED/pyr_tot01.sas7bdat" ) 
 names( dr99 ) 
 
 # 1999-2002 has only 1 day of dietary interview ( 1 24 hr recall )  whereas 2003-2017 has 2 days
@@ -53,11 +68,12 @@ foodgrpshr9902 <- dr99 %>%
 ncol( foodgrpshr9902 ) 
 names( foodgrpshr9902 ) 
 
-####### CYCLE 2003-2004 (MPED 2.0) ##########
 
-dr10304 <- read_sas( 'Data-Raw/pyr_tot_d1.sas7bdat' ) 
-dr20304 <- read_sas( 'Data-Raw/pyr_tot_d2.sas7bdat' ) 
-mergedde0304 <- inner_join( dr10304, dr20304, by='SEQN' ) 
+## CYCLE 2003-2004 (MPED 2.0) ##
+
+dr10304 <- read_sas( "01-Data-Raw/FPED/pyr_tot_d1.sas7bdat" ) 
+dr20304 <- read_sas( "01-Data-Raw/FPED/pyr_tot_d2.sas7bdat" ) 
+mergedde0304 <- inner_join( dr10304, dr20304, by="SEQN" ) 
 names( mergedde0304 ) 
 
 
@@ -148,20 +164,20 @@ foodgrpshr0304 <- mergedde0304%>%
          Potatoes, OtherStarchyVeg, Legumes, Soy, RefinedGrain, WholeGrain, Nuts, AddedSugars ) 
 
 
-####### CYCLES 2005-2018 (FPED) ##########
+## CYCLES 2005-2018 (FPED) ##
 
 import_fped <- function( yrs.cycle ) { 
   
-  import::from('magrittr','%>%')
+ 
   
-  dr1 <- haven::read_sas( glue::glue( 'Data-Raw/fped_dr1tot_{yrs.cycle}.sas7bdat' ) )
-  dr2 <- haven::read_sas( glue::glue( 'Data-Raw/fped_dr2tot_{yrs.cycle}.sas7bdat' ) )
-  keep.dr1 <- c( 1, which( stringr::str_detect( colnames( dr1 ), 'DR1T_' ) ) ) # keep intake columns and SEQN
-  keep.dr2 <- c( 1, which( stringr::str_detect( colnames( dr2 ), 'DR2T_' ) ) )
+  dr1 <- haven::read_sas( glue::glue( "01-Data-Raw/FPED/fped_dr1tot_{yrs.cycle}.sas7bdat" ) )
+  dr2 <- haven::read_sas( glue::glue( "01-Data-Raw/FPED/fped_dr2tot_{yrs.cycle}.sas7bdat" ) )
+  keep.dr1 <- c( 1, which( stringr::str_detect( colnames( dr1 ), "DR1T_" ) ) ) # keep intake columns and SEQN
+  keep.dr2 <- c( 1, which( stringr::str_detect( colnames( dr2 ), "DR2T_" ) ) )
   
   # merge day 1 and day 2 data
-  merged.dr <- dplyr::inner_join( dr1[ keep.dr1 ],dr2[ keep.dr2 ], by='SEQN' ) %>%
-    dplyr::inner_join( ., dr1[, 1:14 ],by='SEQN' ) # merge in metadata
+  merged.dr <- dplyr::inner_join( dr1[ keep.dr1 ],dr2[ keep.dr2 ], by="SEQN" ) %>%
+    dplyr::inner_join( ., dr1[, 1:14 ],by="SEQN" ) # merge in metadata
   
   
   merged.dr <- merged.dr %>%
@@ -252,32 +268,41 @@ import_fped <- function( yrs.cycle ) {
   
   return( merged.dr ) 
 }
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
-# apply function to return list of wrangled datasets
-list.0518 <- lapply( c( '0506', '0708', '0910', '1112', '1314',
-                        '1516', '1718'), function( x ) import_fped( x ))
-fped.0518 <- do.call( 'rbind', list.0518 ) 
 
-############# Merge all diet data together
+### Merge Wrangled FPED/MPED Data ###
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
-finalmerge <- bind_rows( foodgrpshr9902, foodgrpshr0304 ,do.call( 'rbind', list.0518 ) )
+## apply function to return list of wrangled datasets ##
+list.0518 <- lapply( c( "0506", "0708", "0910", "1112", "1314",
+                        "1516", "1718"), function( x ) import_fped( x ))
+fped.0518 <- do.call( "rbind", list.0518 ) 
+
+## merge all diet data together ##
+
+finalmerge <- bind_rows( foodgrpshr9902, foodgrpshr0304 ,do.call( "rbind", list.0518 ) )
 nrow( finalmerge )
 # n=92121 with quality dietary data available
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
+
+### Import Demographic Data and Merge ###
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
 # get demo data to get interview weights
 
-demodat99 <- nhanes_load_data( 'DEMO','1999-2000' ) 
-demodat01 <- nhanes_load_data( 'DEMO','2001-2002' ) 
-demodat03 <- nhanes_load_data( 'DEMO','2003-2004' ) 
-demodat05 <- nhanes_load_data( 'DEMO','2005-2006' ) 
-demodat07 <- nhanes_load_data( 'DEMO','2007-2008' ) 
-demodat09 <- nhanes_load_data( 'DEMO','2009-2010' ) 
-demodat11 <- nhanes_load_data( 'DEMO','2011-2012' ) 
-demodat13 <- nhanes_load_data( 'DEMO','2013-2014' ) 
-demodat15 <- read_xpt( file='https://wwwn.cdc.gov/Nchs/Nhanes/2015-2016/DEMO_I.XPT' ) 
-demodat17 <- read_xpt( file='https://wwwn.cdc.gov/Nchs/Nhanes/2017-2018/DEMO_J.XPT' ) 
+demodat99 <- nhanes_load_data( "DEMO","1999-2000" ) 
+demodat01 <- nhanes_load_data( "DEMO","2001-2002" ) 
+demodat03 <- nhanes_load_data( "DEMO","2003-2004" ) 
+demodat05 <- nhanes_load_data( "DEMO","2005-2006" ) 
+demodat07 <- nhanes_load_data( "DEMO","2007-2008" ) 
+demodat09 <- nhanes_load_data( "DEMO","2009-2010" ) 
+demodat11 <- nhanes_load_data( "DEMO","2011-2012" ) 
+demodat13 <- nhanes_load_data( "DEMO","2013-2014" ) 
+demodat15 <- read_xpt( file="https://wwwn.cdc.gov/Nchs/Nhanes/2015-2016/DEMO_I.XPT" ) # cycles 2015-2018 not in `RNHANES`
+demodat17 <- read_xpt( file="https://wwwn.cdc.gov/Nchs/Nhanes/2017-2018/DEMO_J.XPT" ) 
 demodat03$WTINT4YR <- NA
 demodat03$WTMEC4YR <- NA
 demodat05$WTINT4YR <- NA
@@ -295,10 +320,10 @@ demodat15$WTMEC4YR <- NA
 demodat17$WTINT4YR <- NA
 demodat17$WTMEC4YR <- NA
 
-intweights <- rbind( demodat99[ , c( 'SEQN','SDDSRVYR','WTINT2YR','WTINT4YR','WTMEC2YR','WTMEC4YR' ) ],demodat01[ , c( 'SEQN','SDDSRVYR','WTINT2YR','WTINT4YR','WTMEC2YR','WTMEC4YR' ) ],demodat03[ , c( 'SEQN','SDDSRVYR','WTINT2YR','WTINT4YR','WTMEC2YR','WTMEC4YR' ) ],
-      demodat05[ , c( 'SEQN','SDDSRVYR','WTINT2YR','WTINT4YR','WTMEC2YR','WTMEC4YR' ) ],demodat07[ , c( 'SEQN','SDDSRVYR','WTINT2YR','WTINT4YR','WTMEC2YR','WTMEC4YR' ) ],demodat09[ , c( 'SEQN','SDDSRVYR','WTINT2YR','WTINT4YR','WTMEC2YR','WTMEC4YR' ) ],
-      demodat11[ , c( 'SEQN','SDDSRVYR','WTINT2YR','WTINT4YR','WTMEC2YR','WTMEC4YR' ) ],demodat13[ , c( 'SEQN','SDDSRVYR','WTINT2YR','WTINT4YR','WTMEC2YR','WTMEC4YR' ) ],demodat15[ , c( 'SEQN','SDDSRVYR','WTINT2YR','WTINT4YR','WTMEC2YR','WTMEC4YR' ) ],
-      demodat17[ , c( 'SEQN','SDDSRVYR','WTINT2YR','WTINT4YR','WTMEC2YR','WTMEC4YR' ) ] ) 
+intweights <- rbind( demodat99[ , c( "SEQN","SDDSRVYR","WTINT2YR","WTINT4YR","WTMEC2YR","WTMEC4YR" ) ],demodat01[ , c( "SEQN","SDDSRVYR","WTINT2YR","WTINT4YR","WTMEC2YR","WTMEC4YR" ) ],demodat03[ , c( "SEQN","SDDSRVYR","WTINT2YR","WTINT4YR","WTMEC2YR","WTMEC4YR" ) ],
+      demodat05[ , c( "SEQN","SDDSRVYR","WTINT2YR","WTINT4YR","WTMEC2YR","WTMEC4YR" ) ],demodat07[ , c( "SEQN","SDDSRVYR","WTINT2YR","WTINT4YR","WTMEC2YR","WTMEC4YR" ) ],demodat09[ , c( "SEQN","SDDSRVYR","WTINT2YR","WTINT4YR","WTMEC2YR","WTMEC4YR" ) ],
+      demodat11[ , c( "SEQN","SDDSRVYR","WTINT2YR","WTINT4YR","WTMEC2YR","WTMEC4YR" ) ],demodat13[ , c( "SEQN","SDDSRVYR","WTINT2YR","WTINT4YR","WTMEC2YR","WTMEC4YR" ) ],demodat15[ , c( "SEQN","SDDSRVYR","WTINT2YR","WTINT4YR","WTMEC2YR","WTMEC4YR" ) ],
+      demodat17[ , c( "SEQN","SDDSRVYR","WTINT2YR","WTINT4YR","WTMEC2YR","WTMEC4YR" ) ] ) 
   
 # creating 18 year weight variable    
 
@@ -309,17 +334,21 @@ intweights <- intweights %>%
          ifelse( SDDSRVYR %in% c( 3,4,5,6,7,8,9,10 ) ,WTINT2YR/10,NA )  )  ) %>%
   mutate( WTMEC18YR = ifelse( SDDSRVYR %in% c( 1,2 ) ,( 2 / 10 ) * WTMEC4YR,
                           ifelse( SDDSRVYR %in% c( 3,4,5,6,7,8,9,10 ) ,WTMEC2YR / 10,NA )  )  ) 
-     
-## join final datasets and save ##
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
-# join
-finalmerge.b <- left_join( finalmerge, 
-                          intweights[ , c( 'SEQN', 'WTINT18YR' , 'WTMEC18YR' ) ], 
-                          by = 'SEQN' )
 
-saveRDS( finalmerge.b, 'Data-Wrangled/01-FPED-Wrangled.rds' ) # save
+
+### Final Join and Save ###
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------
+
+# join and save
+( finalmerge.b <- left_join( finalmerge, 
+                          intweights[ , c( "SEQN", "WTINT18YR" , "WTMEC18YR" ) ], 
+                          by = "SEQN" ) )%>%
+  saveRDS( "02-Data-Wrangled/01-FPED-Wrangled.rds" ) # save
 
 nrow( finalmerge.b ) # final merge file has 92121 rows
 finalmerge.c <- na.omit( finalmerge.b ) 
 nrow( finalmerge.c ) # after omitting those without dietary data, it comes down to 85391 ( complete cases ) 
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
