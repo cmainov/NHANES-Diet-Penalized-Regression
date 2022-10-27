@@ -94,7 +94,7 @@ for ( i in 1:length( this.e )  ){
   
 }
 
-
+# bind and save final table of results
 rbind( out.s, out.t, out.e ) %>%
   write.table( ., "04-Manuscript/Tables/stratified-results.txt", sep = ", ", row.names = FALSE ) 
 
@@ -143,7 +143,7 @@ for ( i in 1:length( patterns )  ) {
   
 }
 
-do.call( "ggarrange", p ) 
+do.call( "ggarrange", p ) # arrange plots into a final figure
 
 # save
 ggsave( "04-Manuscript/Figures/logit-splines.jpeg", width = 30, height = 20, units = "cm" ) 
