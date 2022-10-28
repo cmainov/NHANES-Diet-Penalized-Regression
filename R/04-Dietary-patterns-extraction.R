@@ -352,7 +352,7 @@ d$PC2 <- t( coefspc[ , 2 ] %*% t( xmatrix ) )
 
 
 
-### Pearson Correlation Matrix (Table 2) PCA ###
+### Pearson Correlation Matrix (Table 2) ###
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
 # subset individuals meeting criteria
@@ -454,3 +454,4 @@ corr.matrix.b[ corr.matrix.b ==" NA" ] <- "--"
 # save table
 write.table( corr.matrix.b, "04-Manuscript/Tables/corr-matrix.txt", sep =",", row.names = FALSE )
 
+# ---------------------------------------------------------------------------------------------------------------------------------------------------------
