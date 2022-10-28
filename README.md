@@ -1,5 +1,5 @@
 # NHANES-Diet-Penalized-Regression
-Public repository of R code and data for reproducing the analysis in the companion manuscript titled "Empirical Dietary Patterns Associated with Food Insecurity in U.S. Cancer Survivors: NHANES 1999–2018" (doi: )
+Public repository of R code and data for reproducing the analysis in the companion manuscript titled "Empirical Dietary Patterns Associated with Food Insecurity in U.S. Cancer Survivors: NHANES 1999–2018" (doi: 10.3390/ijerph192114062)
 
 ## Folder Descriptions
 
