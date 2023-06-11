@@ -40,29 +40,33 @@ foodgrpshr9902 <- dr99 %>%
    Fish_Hi =  M_FISH_HI,
    Fish_Lo =  M_FISH_LO,
    Eggs =  M_EGG,
+   MPSTotal = M_MPF,
    SolidFats =  DISCFAT_SOL,
    Oils =  DISCFAT_OIL,
    Milk =  D_MILK,
    Yogurt =  D_YOGURT,
    Cheese =  D_CHEESE,
+   DTotal = D_TOTAL,
    Alcohol =  A_BEV,
    FruitOther =  F_OTHER,
    F_CitMelBer =  F_CITMLB,
+   FruitTotal = F_TOTAL,
    Tomatoes =  V_TOMATO,
    GreenLeafy =  V_DRKGR,
    DarkYlVeg =  V_DPYEL,
    OtherVeg =  V_OTHER,
    Potatoes =  V_POTATO,
    OtherStarchyVeg =  V_STARCY,
+   VegTotal = V_TOTAL,
    Legumes =  LEGUMES,
    Soy =  M_SOY,
    RefinedGrain =  G_NWHL,
    WholeGrain =  G_WHL,
    Nuts =  M_NUTSD,
    AddedSugars =  ADD_SUG ) %>%
-  select( SEQN, ProcessedMts, RedMts, OrganMts, Poultry, Fish_Hi, Fish_Lo, Eggs, SolidFats, Oils, Milk, 
-         Yogurt, Cheese, Alcohol, FruitOther, F_CitMelBer, Tomatoes, GreenLeafy, DarkYlVeg, OtherVeg, 
-         Potatoes, OtherStarchyVeg, Legumes, Soy, RefinedGrain, WholeGrain, Nuts, AddedSugars ) 
+  select( SEQN, ProcessedMts, RedMts, OrganMts, Poultry, Fish_Hi, Fish_Lo, Eggs, SolidFats, Oils, Milk, MPSTotal,
+          Yogurt, Cheese, DTotal, Alcohol, FruitOther, FruitTotal, F_CitMelBer, Tomatoes, GreenLeafy, DarkYlVeg, OtherVeg,VegTotal,
+          Potatoes, OtherStarchyVeg, Legumes, Soy, RefinedGrain, WholeGrain, Nuts, AddedSugars ) 
 
 # check columns
 ncol( foodgrpshr9902 ) 
@@ -99,6 +103,9 @@ foodgrpshr0304 <- mergedde0304%>%
    Eggs = ifelse( is.na( M_EGG.x )==FALSE & is.na( M_EGG.y )==FALSE, ( M_EGG.x+M_EGG.y ) /2, 
                      ifelse( is.na( M_EGG.x )==TRUE & is.na( M_EGG.y )==FALSE, M_EGG.y, 
                             ifelse( is.na( M_EGG.x )==FALSE & is.na( M_EGG.y )==TRUE, M_EGG.x, NA )  )  ),
+   MPSTotal = ifelse( is.na( M_MPF.x )==FALSE & is.na( M_MPF.y )==FALSE, ( M_MPF.x+M_MPF.y ) /2, 
+                      ifelse( is.na( M_MPF.x )==TRUE & is.na( M_MPF.y )==FALSE, M_MPF.y, 
+                              ifelse( is.na( M_MPF.x )==FALSE & is.na( M_MPF.y )==TRUE, M_MPF.x, NA )  )  ),
    SolidFats = ifelse( is.na( DISCFAT_SOL.x )==FALSE & is.na( DISCFAT_SOL.y )==FALSE, ( DISCFAT_SOL.x+DISCFAT_SOL.y ) /2, 
                           ifelse( is.na( DISCFAT_SOL.x )==TRUE & is.na( DISCFAT_SOL.y )==FALSE, DISCFAT_SOL.y, 
                                  ifelse( is.na( DISCFAT_SOL.x )==FALSE & is.na( DISCFAT_SOL.y )==TRUE, DISCFAT_SOL.x, NA )  )  ),
@@ -114,6 +121,9 @@ foodgrpshr0304 <- mergedde0304%>%
    Cheese = ifelse( is.na( D_CHEESE.x )==FALSE & is.na( D_CHEESE.y )==FALSE, ( D_CHEESE.x+D_CHEESE.y ) /2, 
                        ifelse( is.na( D_CHEESE.x )==TRUE & is.na( D_CHEESE.y )==FALSE, D_CHEESE.y, 
                               ifelse( is.na( D_CHEESE.x )==FALSE & is.na( D_CHEESE.y )==TRUE, D_CHEESE.x, NA )  )  ),
+   DTotal = ifelse( is.na( D_TOTAL.x )==FALSE & is.na( D_TOTAL.y )==FALSE, ( D_TOTAL.x+D_TOTAL.y ) /2, 
+                    ifelse( is.na( D_TOTAL.x )==TRUE & is.na( D_TOTAL.y )==FALSE, D_TOTAL.y, 
+                            ifelse( is.na( D_TOTAL.x )==FALSE & is.na( D_TOTAL.y )==TRUE, D_TOTAL.x, NA )  )  ),
    Alcohol = ifelse( is.na( A_BEV.x )==FALSE & is.na( A_BEV.y )==FALSE, ( A_BEV.x+A_BEV.y ) /2, 
                         ifelse( is.na( A_BEV.x )==TRUE & is.na( A_BEV.y )==FALSE, A_BEV.y, 
                                ifelse( is.na( A_BEV.x )==FALSE & is.na( A_BEV.y )==TRUE, A_BEV.x, NA )  )  ),
@@ -123,6 +133,9 @@ foodgrpshr0304 <- mergedde0304%>%
    F_CitMelBer = ifelse( is.na( F_CITMLB.x )==FALSE & is.na( F_CITMLB.y )==FALSE, ( F_CITMLB.x+F_CITMLB.y ) /2, 
                            ifelse( is.na( F_CITMLB.x )==TRUE & is.na( F_CITMLB.y )==FALSE, F_CITMLB.y, 
                                   ifelse( is.na( F_CITMLB.x )==FALSE & is.na( F_CITMLB.y )==TRUE, F_CITMLB.x, NA )  )  ),
+   FruitTotal = ifelse( is.na( F_TOTAL.x )==FALSE & is.na( F_TOTAL.y )==FALSE, ( F_TOTAL.x+F_TOTAL.y ) /2, 
+                        ifelse( is.na( F_TOTAL.x )==TRUE & is.na( F_TOTAL.y )==FALSE, F_TOTAL.y, 
+                                ifelse( is.na( F_TOTAL.x )==FALSE & is.na( F_TOTAL.y )==TRUE, F_TOTAL.x, NA )  )  ),
    Tomatoes = ifelse( is.na( V_TOMATO.x )==FALSE & is.na( V_TOMATO.y )==FALSE, ( V_TOMATO.x+V_TOMATO.y ) /2, 
                          ifelse( is.na( V_TOMATO.x )==TRUE & is.na( V_TOMATO.y )==FALSE, V_TOMATO.y, 
                                 ifelse( is.na( V_TOMATO.x )==FALSE & is.na( V_TOMATO.y )==TRUE, V_TOMATO.x, NA )  )  ),
@@ -132,6 +145,9 @@ foodgrpshr0304 <- mergedde0304%>%
    DarkYlVeg = ifelse( is.na( V_ORANGE.x )==FALSE & is.na( V_ORANGE.y )==FALSE, ( V_ORANGE.x+V_ORANGE.y ) /2, 
                           ifelse( is.na( V_ORANGE.x )==TRUE & is.na( V_ORANGE.y )==FALSE, V_ORANGE.y, 
                                  ifelse( is.na( V_ORANGE.x )==FALSE & is.na( V_ORANGE.y )==TRUE, V_ORANGE.x, NA )  )  ),
+   VegTotal = ifelse( is.na( V_TOTAL.x )==FALSE & is.na( V_TOTAL.y )==FALSE, ( V_TOTAL.x+V_TOTAL.y ) /2, 
+                      ifelse( is.na( V_TOTAL.x )==TRUE & is.na( V_TOTAL.y )==FALSE, V_TOTAL.y, 
+                              ifelse( is.na( V_TOTAL.x )==FALSE & is.na( V_TOTAL.y )==TRUE, V_TOTAL.x, NA )  )  ),
    OtherVeg = ifelse( is.na( V_OTHER.x )==FALSE & is.na( V_OTHER.y )==FALSE, ( V_OTHER.x+V_OTHER.y ) /2, 
                          ifelse( is.na( V_OTHER.x )==TRUE & is.na( V_OTHER.y )==FALSE, V_OTHER.y, 
                                 ifelse( is.na( V_OTHER.x )==FALSE & is.na( V_OTHER.y )==TRUE, V_OTHER.x, NA )  )  ),
@@ -159,9 +175,9 @@ foodgrpshr0304 <- mergedde0304%>%
    AddedSugars = ifelse( is.na( ADD_SUG.x )==FALSE & is.na( ADD_SUG.y )==FALSE, ( ADD_SUG.x+ADD_SUG.y ) /2, 
                             ifelse( is.na( ADD_SUG.x )==TRUE & is.na( ADD_SUG.y )==FALSE, ADD_SUG.y, 
                                    ifelse( is.na( ADD_SUG.x )==FALSE & is.na( ADD_SUG.y )==TRUE, ADD_SUG.x, NA )  )  ) ) %>%
-  select( SEQN, ProcessedMts, RedMts, OrganMts, Poultry, Fish_Hi, Fish_Lo, Eggs, SolidFats, Oils, Milk, 
-         Yogurt, Cheese, Alcohol, FruitOther, F_CitMelBer, Tomatoes, GreenLeafy, DarkYlVeg, OtherVeg, 
-         Potatoes, OtherStarchyVeg, Legumes, Soy, RefinedGrain, WholeGrain, Nuts, AddedSugars ) 
+  select( SEQN, ProcessedMts, RedMts, OrganMts, Poultry, Fish_Hi, Fish_Lo, Eggs, SolidFats, Oils, Milk, MPSTotal,
+          Yogurt, Cheese, DTotal, Alcohol, FruitOther, FruitTotal, F_CitMelBer, Tomatoes, GreenLeafy, DarkYlVeg, OtherVeg,VegTotal,
+          Potatoes, OtherStarchyVeg, Legumes, Soy, RefinedGrain, WholeGrain, Nuts, AddedSugars ) 
 
 
 ## CYCLES 2005-2018 (FPED) ##
