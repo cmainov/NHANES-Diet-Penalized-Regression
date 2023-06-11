@@ -16,10 +16,10 @@
 # Resources: 
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------
 
-library( tidyverse )
-library( survey ) # complex survey design models
 library( glmnet ) # fit penalized regression models
 library( caret ) # control tuning parameters in penalized regression
+library( tidyverse )
+library( survey ) # complex survey design models
 library( jtools ) # svycor function
 library( weights )
 library( latex2exp ) # to add LaTeX to plots

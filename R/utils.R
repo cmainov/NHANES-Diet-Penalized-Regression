@@ -250,11 +250,11 @@ results_function<-function(df, covariates, variables, y, cuts, subset.condition=
 
 
 logit_splines <- function(df, x, y, knots, covariates, wts, referent='median', xlab, ylab,
-                          legend.pos){
+                          legend.pos="none"){
   
   df$x<-as.numeric(eval(parse(text=paste0('df$',x))))
   
-  dd <- rms::datadist(df)
+  dd <<- rms::datadist(df)
   dd$limits$x[2] <- unique(df[GenKern::nearest(df$x,eval(parse(text=paste0(referent,"( ","df$x,na.rm=T)")))),'x'] )
   options(datadist = "dd")
   
