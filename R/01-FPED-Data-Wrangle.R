@@ -223,9 +223,21 @@ import_fped <- function( yrs.cycle ) {
                    F_CitMelBer = ifelse( DRDINT==2,( DR1T_F_CITMLB+DR2T_F_CITMLB ) /2,
                                          ifelse( DRDINT==1 & is.na( DR1T_F_CITMLB )==FALSE,DR1T_F_CITMLB,
                                                  ifelse( DRDINT==1 & is.na( DR2T_F_CITMLB )==FALSE,DR2T_F_CITMLB,NA )  )  ),
+                   VegTotal = ifelse( DRDINT==2,( DR1T_V_TOTAL+DR2T_V_TOTAL ) /2,
+                                         ifelse( DRDINT==1 & is.na( DR1T_V_TOTAL )==FALSE,DR1T_V_TOTAL,
+                                                 ifelse( DRDINT==1 & is.na( DR2T_V_TOTAL )==FALSE,DR2T_V_TOTAL,NA )  )  ),
+                   MPSTotal = ifelse( DRDINT==2,( DR1T_PF_MPS_TOTAL+DR2T_PF_MPS_TOTAL ) /2,
+                                     ifelse( DRDINT==1 & is.na( DR1T_PF_MPS_TOTAL )==FALSE,DR1T_PF_MPS_TOTAL,
+                                             ifelse( DRDINT==1 & is.na( DR2T_PF_MPS_TOTAL )==FALSE,DR2T_PF_MPS_TOTAL,NA )  )  ),
+                   DTotal = ifelse( DRDINT==2,( DR1T_D_TOTAL+DR2T_D_TOTAL ) /2,
+                                       ifelse( DRDINT==1 & is.na( DR1T_D_TOTAL )==FALSE,DR1T_D_TOTAL,
+                                               ifelse( DRDINT==1 & is.na( DR2T_D_TOTAL )==FALSE,DR2T_D_TOTAL,NA )  )  ),
                    FruitOther = ifelse( DRDINT==2,( DR1T_F_OTHER+DR2T_F_OTHER ) /2,
                                         ifelse( DRDINT==1 & is.na( DR1T_F_OTHER )==FALSE,DR1T_F_OTHER,
                                                 ifelse( DRDINT==1 & is.na( DR2T_F_OTHER )==FALSE,DR2T_F_OTHER,NA )  )  ),
+                   FruitTotal = ifelse( DRDINT==2,( DR1T_F_TOTAL+DR2T_F_TOTAL ) /2,
+                                        ifelse( DRDINT==1 & is.na( DR1T_F_TOTAL )==FALSE,DR1T_F_TOTAL,
+                                                ifelse( DRDINT==1 & is.na( DR2T_F_TOTAL )==FALSE,DR2T_F_TOTAL,NA )  )  ),
                    Tomatoes = ifelse( DRDINT==2,( DR1T_V_REDOR_TOMATO+DR2T_V_REDOR_TOMATO ) /2,
                                       ifelse( DRDINT==1 & is.na( DR1T_V_REDOR_TOMATO )==FALSE,DR1T_V_REDOR_TOMATO,
                                               ifelse( DRDINT==1 & is.na( DR2T_V_REDOR_TOMATO )==FALSE,DR2T_V_REDOR_TOMATO,NA )  )  ),
@@ -262,8 +274,8 @@ import_fped <- function( yrs.cycle ) {
                    AddedSugars = ifelse( DRDINT==2,( DR1T_ADD_SUGARS+DR2T_ADD_SUGARS ) /2,
                                          ifelse( DRDINT==1 & is.na( DR1T_ADD_SUGARS )==FALSE,DR1T_ADD_SUGARS,
                                                  ifelse( DRDINT==1 & is.na( DR2T_ADD_SUGARS )==FALSE,DR2T_ADD_SUGARS,NA ) ) ) ) %>%
-    select( SEQN, ProcessedMts, RedMts, OrganMts, Poultry, Fish_Hi, Fish_Lo, Eggs, SolidFats, Oils, Milk,
-            Yogurt, Cheese, Alcohol, FruitOther, F_CitMelBer, Tomatoes, GreenLeafy, DarkYlVeg, OtherVeg,
+    select( SEQN, ProcessedMts, RedMts, OrganMts, Poultry, Fish_Hi, Fish_Lo, Eggs, SolidFats, Oils, Milk, MPSTotal,
+            Yogurt, Cheese, DTotal, Alcohol, FruitOther, FruitTotal, F_CitMelBer, Tomatoes, GreenLeafy, DarkYlVeg, OtherVeg,VegTotal,
             Potatoes, OtherStarchyVeg, Legumes, Soy, RefinedGrain, WholeGrain, Nuts, AddedSugars ) 
   
   return( merged.dr ) 

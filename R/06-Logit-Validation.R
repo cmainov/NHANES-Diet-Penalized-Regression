@@ -126,7 +126,7 @@ for ( i in 1:length( patterns )  ) {
   if ( i == 1 ) {
     p[[i]] <- logit_splines( df = dat.sub, x = patterns[i], y = 'BinFoodSecHH', knots = 5, covariates = covars.logit, 
                   wts = 'WTDR18YR', referent = 'median', ylab = "Odds Ratio ( Food Insecure ) ", xlab = pattern.labels[i],
-                  legend.pos = c( 0.34, 0.8 )  ) 
+                         ) 
     }
 
     else if ( i == 4 ) {

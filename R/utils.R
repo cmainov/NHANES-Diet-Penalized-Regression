@@ -262,7 +262,7 @@ logit_splines <- function(df, x, y, knots, covariates, wts, referent='median', x
   modelspline<-rms::lrm(formula(glue::glue('{y} ~ rms::rcs( x, {knots} ) + ',
                                            paste0(covariates,collapse='+'))),
                         data=df,
-                        weights=get(wts),
+                        weights=WTDR18YR,
                         normwt = T) # normalize weights for survey data
   
   pdata1 <- rms::Predict(modelspline, 
